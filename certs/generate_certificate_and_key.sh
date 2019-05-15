@@ -105,7 +105,3 @@ openssl-1.1.1b ec -in client.key -pubout -out clientpub.key
 
 # append certificate to private key for client
 cat client.key clientjust.crt > client.crt
-
-
-
-rm certauth.srl certauth.csr

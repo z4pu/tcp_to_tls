@@ -1,0 +1,12 @@
+basicConstraints=CA:FALSE
+authorityKeyIdentifier=keyid,issuer
+subjectKeyIdentifier=hash
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage=serverAuth
+subjectAltName =critical,IP:127.0.0.1
+#subjectAltName =dirName:end_tls_server_dir_sect,IP:127.0.0.1
+
+[ end_tls_server_dir_sect ]
+O=Test
+OU=Server
+CN=Server

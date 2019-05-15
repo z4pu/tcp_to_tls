@@ -67,7 +67,8 @@ Running `make` builds 4 executables in the `bin` folder:
 ~~~bash
 # Generate the certificates for the TLS connection
 cd certs
-# Example: (The double spaces for empty fields are needed)
+# Example:
+# X.509v1 certificates
 ./generate_certificate_and_key.sh \
 -s "/O=Test/OU=Server/CN=127.0.0.1" \
 -c "/O=Test/OU=Client/CN=127.0.0.1"
@@ -75,8 +76,13 @@ cd certs
 # Security note: The output private keys are NOT encrypted
 # If you wish to encrypt the private keys, your application must set
 # SSL_CTX_set_default_passwd_cb or SSL_set_default_passwd_cb
+# Or, for X.509v3 certificates
+# Make changes to the config files in openssl_conf_files if required
+# https://www.openssl.org/docs/man1.1.1/man5/x509v3_config.html
+# https://access.redhat.com/documentation/en-US/Red_Hat_Certificate_System/8.0/html/Admin_Guide/Standard_X.509_v3_Certificate_Extensions.html
+./generate_certificate_and_key_x509v3.sh
 
-# Install the certauth.crt
+# Install the certauth.crt for centos or debian
 ./install_ca_cert.sh -o debian
 
 # Run the executables
