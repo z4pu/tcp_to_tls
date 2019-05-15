@@ -1,0 +1,6 @@
+{
+  "execPath": "/usr/bin/gcc",
+  "gccDefaultCFlags": "-c -Wall -fsyntax-only -o /dev/null",
+  "gccDefaultCppFlags": "-std=c++11 -c -Wall -Wextra -Wno-variadic-macros -pedantic -pthread -Wshadow -Wpointer-arith -Wcast-qual -fpermissive -fsyntax-only -o /dev/null",
+  "gccIncludePaths": ".,./src,./include,../include,/usr/lib/gcc/x86_64-linux-gnu/7/include,/usr/local/include,/usr/include,/opt/openssl/1.1.1b/include"
+}
