@@ -65,6 +65,30 @@ add_executable(client_udp
     common.cpp
 )
 
+# server_dtls
+add_executable(server_dtls
+    server_dtls.cpp
+    server_udp_helper.cpp
+    common.cpp
+)
+target_link_libraries(server_dtls
+    ${openssllibs}
+)
+
+
+# client_dtls
+add_executable(client_dtls
+    client_dtls.cpp
+    client_tls_helper.cpp
+    client_udp_helper.cpp
+    common_tls.cpp
+    common.cpp
+)
+target_link_libraries(client_dtls
+    ${openssllibs}
+)
+
+
 # server_tcp
 add_executable(server_tcp
     server_tcp.cpp

@@ -33,8 +33,7 @@ cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug -DBUILD_ASAN=ON
 cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug \
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
-cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug \
--DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DBUILD_ASAN=ON
+cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DBUILD_ASAN=ON
 
 #3  Possible values for -DCMAKE_BUILD_TYPE are
 # Debug, Release, RelWithDebInfo and MinSizeRel

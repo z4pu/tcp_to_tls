@@ -1,4 +1,4 @@
-#include "server_tcp_helper.hpp"
+#include "server_udp_helper.hpp"
 #include "server_tls_helper.hpp"
 #include "common_tls.hpp"
 #include "common.hpp"
@@ -27,14 +27,13 @@ extern "C" {
 
 BIO *bio_err;
 
-
 int Usage(int err, char *argv[]);
 
 
 int main(int argc, char *argv[])
 {
-    int err = 0;
-    int sd, client_sd, server_port, r = 0;
+    int err, r = 0;
+    int sd, server_port = 0;
     socklen_t slen ;
 	sockaddr_in	sa;
     SSL *ssl;
@@ -74,57 +73,15 @@ int main(int argc, char *argv[])
 
     server_port = atoi(argv[2]);
 
-    sd = TCPListen(server_port, NUM_CLIENTS);
+    sd = UDPBind(server_port);
     if (sd == -1) return -1;
 
-    ctx = TLSInitServerContextFromKeystore(ctx, SERVER_CERTIFICATE,
+    ctx = DTLSInitServerContextFromKeystore(ctx, SERVER_CERTIFICATE,
         SERVER_PRIVATEKEY, TRUSTED_CA_CERTS_FILE);
     if (!ctx) return -1;
 
     for (;;) {
-        slen = sizeof(sockaddr_in);
-        client_sd = accept(sd, (struct sockaddr *)&sa,	&slen);
-        if (client_sd < 0){
-            perror("accept() failed");
-            continue;
-        }
-        std::cout << "\n--> accept(): OK from "
-        << inet_ntoa(sa.sin_addr)
-        << std::endl;
-
-        ssl = SSL_new(ctx);
-    	if (ssl == NULL){
-    		OSSLErrorHandler("SSL_new(): Error creating new SSL from ctx");
-    		close(client_sd);
-            continue;
-    	}
-
-        // sets client_sd as the input/output facility for the TLS/SSL
-        // (encrypted) side of ssl
-        // Creates a socket BIO to interface between the ssl and file
-        // descriptor
-        if (!SSL_set_fd(ssl, client_sd)) {
-            OSSLErrorHandler("SSL_set_fd(client_sd)");
-            SSL_shutdown(ssl);
-   		    SSL_free(ssl);
-    		close(client_sd);
-            continue;
-        }
-        std::cout << "--> SSL_set_fd: OK" << std::endl;
-
-        // waits for a TLS/SSL client to initiate the TLS/SSL handshake
-        if (SSL_accept(ssl) <= 0) {
-      	     OSSLErrorHandler("SSL_accept()");
-             SSL_shutdown(ssl);
-    		 SSL_free(ssl);
-             close(client_sd);
-             continue;
-  	     }
-         std::cout << "TLS client accepted" << std::endl;
-         ProcessTLSClient(ssl);
-         SSL_shutdown(ssl);
-		 SSL_free(ssl);
-         close(client_sd);
+        ProcessDTLSClient(sd, ctx);
     }
 
     SSL_CTX_free(ctx);

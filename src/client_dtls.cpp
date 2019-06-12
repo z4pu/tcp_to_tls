@@ -1,7 +1,6 @@
-
 #include "common.hpp"
 #include "common_tls.hpp"
-#include "client_tcp_helper.hpp"
+#include "client_udp_helper.hpp"
 #include "client_tls_helper.hpp"
 
 
@@ -13,6 +12,8 @@
 
 extern "C" {
     #include <unistd.h>
+    #include <netinet/in.h>
+    #include <netinet/sctp.h>
 }
 
 extern "C" {
@@ -25,15 +26,15 @@ BIO *bio_err;
 
 int Usage(char *argv[]);
 
+
 int main(int argc, char *argv[]){
     int srv_port, sd, r, err = 0;
     unsigned char received_string[MAX_STRING_LENGTH+1] = {};
+    sockaddr_in peer_addr;
+    memset(&peer_addr, 0, sizeof(sockaddr_in));
     SSL *ssl;
     SSL_CTX* ctx = nullptr;
 
-    // As of version 1.1.0 OpenSSL will automatically allocate all
-    // resources that it needs so no explicit initialisation is required.
-    // https://wiki.openssl.org/index.php/Library_Initialization
     bio_err=BIO_new_fp(stderr, BIO_NOCLOSE);
 
     if (argc!=7)  {
@@ -49,29 +50,32 @@ int main(int argc, char *argv[]){
                 return 0;
         }
         else {
-            ctx = TLSInitClientContextFromKeystore(ctx,
+            ctx = DTLSInitClientContextFromKeystore(ctx,
                 CLIENT_CERTIFICATE, CLIENT_PRIVATEKEY, TRUSTED_CA_CERTS_FILE);
             if (!ctx) return -1;
 
             srv_port = atoi(argv[4]);
 
-            if ((sd = TCPConnect(srv_port, argv[2])) < 0){
-                perror("main(): TCPConnect()");
+            BuildAddress(peer_addr, srv_port, argv[2]);
+
+            if ((sd = UDPClientSocket(srv_port, argv[2])) < 0){
+                perror("main(): UDPClientSocket()");
                 return 0;
             }
 
             ssl = SSL_new(ctx);
-        	if (ssl == NULL){
-        		OSSLErrorHandler("SSL_new(): Error creating new SSL from ctx");
-        		close(sd);
+            if (ssl == NULL){
+                OSSLErrorHandler("SSL_new(): Error creating new SSL from ctx");
+                close(sd);
                 return 0;
-        	}
+            }
 
-            if (!SSL_set_fd(ssl, sd)) {
-                OSSLErrorHandler("SSL_set_fd(sd)");
-                SSL_shutdown(ssl);
-       		    SSL_free(ssl);
-        		close(sd);
+            r = SetPeerasTLSEndpoint(sd, peer_addr, ssl);
+            if (r == -1) {
+                OSSLErrorHandler("SetPeerasTLSEndpoint()");
+                SSL_free(ssl);
+                close(sd);
+                SSL_CTX_free(ctx);
                 return 0;
             }
 
@@ -82,8 +86,9 @@ int main(int argc, char *argv[]){
                 err = SSL_get_error(ssl, r);
                 OSSLErrorHandler("SSL_do_handshake");
                 SSL_shutdown(ssl);
-       		    SSL_free(ssl);
+                SSL_free(ssl);
                 close(sd);
+                SSL_CTX_free(ctx);
                 return 0;
             }
             std::cout << "Handshake ok" << std::endl;
@@ -94,6 +99,7 @@ int main(int argc, char *argv[]){
               SSL_shutdown(ssl);
               SSL_free(ssl);
               close(sd);
+              SSL_CTX_free(ctx);
               return 0;
             }
 
@@ -103,6 +109,7 @@ int main(int argc, char *argv[]){
               SSL_shutdown(ssl);
               SSL_free(ssl);
               close(sd);
+              SSL_CTX_free(ctx);
               return 0;
             }
 
