@@ -3,7 +3,7 @@
 Simple client and server programs that run:
 -   with TCP
 -   with TLS
--   with SCTP (using connected client sockets)
+-   with SCTP (using connected client socket)
 -   with SCTP (using the original server socket)
 
 ## Installation requirements
@@ -16,6 +16,7 @@ sudo apt-get install -y \
 
 -   Install OpenSSL v 1.1.1b using instructions in `docs/INSTALLING_OPENSSL_1.1.1b.md`
 -   To build the sctp programs, `sudo apt-get install -y libsctp-dev libsctp1`
+
 ## Building the Executables
 
 Pre-requisites: CMAKE 3.7
