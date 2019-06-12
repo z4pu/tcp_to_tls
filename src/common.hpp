@@ -3,23 +3,14 @@
 
 #define MAX_STRING_LENGTH 144
 #define DEBUG
+#define NUM_CLIENTS 1
+#define TIMEOUT_IN_SECS 10
 
 void *get_in_addr(struct sockaddr *sa);
-
 bool FileExists(const char* filename);
 
-int ReceiveNBytes(const int &fd, const int & size, unsigned char* buf);
+void ReverseString(char *s);
 
-int SendNBytes(const int &fd, const int & size, unsigned char* buf);
-
-int ReceiveSizeOfIncomingMessage(const int& socket);
-
-int SendStringSize(const int& socket, const char * string_to_send);
-
-int SendString(const int& socket, const char * string);
-
-int ReceiveMessage(const int& socket, unsigned char * const inbuff);
-
-
+void BuildAddress(struct sockaddr_in &addr, const int &port, const char* ip);
 
 #endif /* COMMON_HPP */

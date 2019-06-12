@@ -1,4 +1,5 @@
 #include "server_tcp_helper.hpp"
+#include "common_tcp.hpp"
 #include "common.hpp"
 
 extern "C" {
@@ -50,12 +51,12 @@ int TCPListen(const int& port, const int& backlog)
 	hints.ai_flags = AI_PASSIVE ; /* passive open */
 	hints.ai_family = AF_UNSPEC ; /* IPv4 or IPv6 */
 	hints.ai_socktype = SOCK_STREAM ; /* TCP - Socket */
+    hints.ai_protocol = IPPROTO_TCP;
 
 	/* fill Address struct for passive socket */
 	if ((status = getaddrinfo(nullptr, port_str, &hints, &ai)) == 0)
 	{
-			for (aptr = ai; aptr != NULL; aptr = aptr->ai_next )
-			{
+			for (aptr = ai; aptr != NULL; aptr = aptr->ai_next ) {
 				if (( sd = socket(aptr->ai_family,
 					aptr->ai_socktype, aptr->ai_protocol)) < 0 )
 					continue; /* If error, go to next Address struct */
@@ -67,12 +68,16 @@ int TCPListen(const int& port, const int& backlog)
                 // Add timeout value
                 //setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
-				if (bind (sd, aptr->ai_addr, aptr->ai_addrlen ) == 0 )
-
+				if (bind (sd, aptr->ai_addr, aptr->ai_addrlen ) == -1 ) {
+                    close(sd);
+                    perror("TCPListen(): bind");
+                    continue;
+                }
 				/* Change passive socket to active socket */
-				if (listen(sd, backlog) >= 0 )
-					/* End loop if successful */
+				if (listen(sd, backlog) >= 0 ) {
+                    /* End loop if successful */
 					break;
+                }
 				/* If error, close socket ... */
 				close(sd);
 			}
@@ -100,14 +105,14 @@ int TCPListen(const int& port, const int& backlog)
 }
 
 
-void ProcessClient (const int& socket) {
+void ProcessTCPClient (const int& socket) {
     int r = 0;
-    unsigned char buff[MAX_STRING_LENGTH] = {};
+    unsigned char buff[MAX_STRING_LENGTH+1] = {};
     std::string instring, outstring;
 
     r = ReceiveMessage(socket, buff);
     if (r == -1) {
-        perror("ProcessClient(): ReceiveRequest()");
+        perror("ProcessTCPClient(): ReceiveRequest()");
         return;
     }
 
@@ -115,28 +120,15 @@ void ProcessClient (const int& socket) {
 
     r = SendStringSize(socket, reinterpret_cast<char*>(buff));
     if (r == -1) {
-        perror("ProcessClient(): SendStringSize(reversed string)");
+        perror("ProcessTCPClient(): SendStringSize(reversed string)");
         return;
     }
 
     r = SendString(socket, reinterpret_cast<char*>(buff));
     if (r == -1) {
-        perror("ProcessClient(): SendString(reversed string)");
+        perror("ProcessTCPClient(): SendString(reversed string)");
         return;
     }
 
     return;
-}
-
-void ReverseString(char *s)
-{
-	int i, j;
-	char c;
-	j = strlen(s);
-	for (i=0, j = strlen(s)-1; i<j; i++, j--)
-	{
-		c = s[i];
-		s[i] = s[j];
-		s[j] = c;
-	}
 }

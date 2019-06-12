@@ -10,7 +10,7 @@ sudo apt-get install -y \
 ~~~
 
 -   Install OpenSSL v 1.1.1b using instructions in `docs/INSTALLING_OPENSSL_1.1.1b.md`
-
+-   To build the sctp programs, `sudo apt-get install -y libsctp-dev libsctp1`
 ## Building the Executables
 
 Pre-requisites: CMAKE 3.7
@@ -40,7 +40,7 @@ make
 
 ## Running the executables
 
-Running `make` builds 4 executables in the `bin` folder:
+Running `make` builds executables in the `bin` folder:
 
 | Executable name | Description |
 |---|---|
@@ -48,7 +48,10 @@ Running `make` builds 4 executables in the `bin` folder:
 | client_tcp  | Connects to server and sends it a string. Waits for the server to respond. then disconnects.  |
 | server_tls  | As with server_tcp, but over a TLS connection  |
 | client_tls  | As with client_tcp, but over a TLS connection  |
-
+| server_sctp_one_to_one  | As with server_tcp, but using SCTP one-to-one sockets  |
+| client_sctp_one_to_one  | As with client_tcp, but using SCTP one-to-one sockets  |
+| server_sctp_one_to_many  | As with server_tcp, but using SCTP one-to-many sockets  |
+| client_sctp_one_to_many  | As with client_tcp, but using SCTP one-to-many sockets  |
 
 **server_tcp and client_tcp**
 
@@ -68,7 +71,7 @@ Running `make` builds 4 executables in the `bin` folder:
 # Generate the certificates for the TLS connection
 cd certs
 # Example:
-# X.509v1 certificates
+# OPTION 1: X.509v1 certificates
 ./generate_certificate_and_key.sh \
 -s "/O=Test/OU=Server/CN=127.0.0.1" \
 -c "/O=Test/OU=Client/CN=127.0.0.1"
@@ -76,8 +79,10 @@ cd certs
 # Security note: The output private keys are NOT encrypted
 # If you wish to encrypt the private keys, your application must set
 # SSL_CTX_set_default_passwd_cb or SSL_set_default_passwd_cb
-# Or, for X.509v3 certificates
-# Make changes to the config files in openssl_conf_files if required
+
+# OPTION 2:  X.509v3 certificates
+# Make changes to the config files in openssl_conf_files if you
+# need to change the IP addresses
 # https://www.openssl.org/docs/man1.1.1/man5/x509v3_config.html
 # https://access.redhat.com/documentation/en-US/Red_Hat_Certificate_System/8.0/html/Admin_Guide/Standard_X.509_v3_Certificate_Extensions.html
 ./generate_certificate_and_key_x509v3.sh
@@ -87,10 +92,34 @@ cd certs
 
 # Run the executables
 ./server_tls -p <port to listen>
-./client_tls -h <server IP> -p <server's listening port> \
+./client_tls -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
 # EXAMPLE
 ./server_tls -p 4000
 ./client_tls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
+~~~
+
+**server_sctp_one_to_one and client_sctp_one_to_one**
+
+~~~bash
+./server_sctp_one_to_one -p <port to listen>
+./client_sctp_one_to_one -h <server IP> -p <server listening port> \
+    -s <string to reverse>
+
+# EXAMPLE
+./server_sctp_one_to_one -p 4000
+./client_sctp_one_to_one -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
+~~~
+
+**server_sctp_one_to_many and client_sctp_one_to_many**
+
+~~~bash
+./server_sctp_one_to_many -p <port to listen>
+./client_sctp_one_to_many -h <server IP> -p <server listening port> \
+    -s <string to reverse>
+
+# EXAMPLE
+./server_sctp_one_to_many -p 4000
+./client_sctp_one_to_many -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~

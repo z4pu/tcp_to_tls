@@ -49,18 +49,20 @@ set(openssllibs ${OPENSSL_SSL_CACHE} ${OPENSSL_CRYPTO_CACHE})
 #################################################################
 # Executables
 #################################################################
-# server
+# server_tcp
 add_executable(server_tcp
     server_tcp.cpp
     server_tcp_helper.cpp
+    common_tcp.cpp
     common.cpp
 )
 
 
-# client
+# client_tcp
 add_executable(client_tcp
     client_tcp.cpp
     client_tcp_helper.cpp
+    common_tcp.cpp
     common.cpp
 )
 
@@ -70,6 +72,7 @@ add_executable(server_tls
     server_tcp_helper.cpp
     server_tls_helper.cpp
     common_tls.cpp
+    common_tcp.cpp
     common.cpp
 )
 target_link_libraries(server_tls
@@ -82,8 +85,53 @@ add_executable(client_tls
     client_tls_helper.cpp
     client_tcp_helper.cpp
     common_tls.cpp
+    common_tcp.cpp
     common.cpp
 )
 target_link_libraries(client_tls
     ${openssllibs}
+)
+
+# server_sctp_one_to_one
+add_executable(server_sctp_one_to_one
+    server_sctp_one_to_one.cpp
+    server_sctp_helper.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_one
+    sctp
+)
+
+# client_sctp_one_to_one
+add_executable(client_sctp_one_to_one
+    client_sctp_one_to_one.cpp
+    client_sctp_helper.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(client_sctp_one_to_one
+    sctp
+)
+
+add_executable(server_sctp_one_to_many
+    server_sctp_one_to_many.cpp
+    server_sctp_helper.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_many
+    sctp
+)
+
+
+# client_sctp_one_to_many
+add_executable(client_sctp_one_to_many
+    client_sctp_one_to_many.cpp
+    client_sctp_helper.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(client_sctp_one_to_many
+    sctp
 )

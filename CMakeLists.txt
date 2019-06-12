@@ -13,9 +13,11 @@ option(BUILD_ASAN "Build with address sanitizer" OFF)
 # Compiler options
 #################################################################
 add_compile_options(-std=c++11
-  -fPIC -Wall -Wno-unknown-pragmas -Wextra -Wno-variadic-macros
-  -Wno-uninitialized -Wno-maybe-uninitialized -pedantic -Wshadow
-  -Wpointer-arith -Wcast-qual -fpermissive -Xlinker --verbose
+    -fPIC -Wall -Wno-unknown-pragmas -Wextra -Wno-variadic-macros
+    -Wno-unused-variable -Wno-unused-value -Wno-unused-function
+    -Wno-unused-parameter -Wno-uninitialized -Wno-maybe-uninitialized
+    -pedantic -Wshadow -Wpointer-arith -Wcast-qual -fpermissive
+    -Xlinker --verbose
 )
 if (BUILD_ASAN)
   add_compile_options(-fsanitize=address -fno-omit-frame-pointer )

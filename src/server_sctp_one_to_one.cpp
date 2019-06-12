@@ -1,5 +1,6 @@
-#include "server_tcp_helper.hpp"
+#include "server_sctp_helper.hpp"
 #include "common.hpp"
+
 
 #include <cstring>
 #include <cstdio>
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
 
     server_port = atoi(argv[2]);
 
-    sd = TCPListen(server_port, NUM_CLIENTS);
+    sd = SCTPListenOneToOne(server_port, NUM_CLIENTS);
     if (sd == -1) return -1;
 
 
@@ -55,7 +56,7 @@ int main(int argc, char *argv[])
         }
         std::cout << "--> accept(): OK from "
         << inet_ntoa(sa.sin_addr)  << std::endl;
-        ProcessTCPClient (client_sd);
+        ProcessSCTPClientWithClientSocket (client_sd);
         close(client_sd);
     }
 

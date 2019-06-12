@@ -1,4 +1,5 @@
 #include "client_tcp_helper.hpp"
+#include "common_tcp.hpp"
 #include "common.hpp"
 
 extern "C" {
@@ -30,6 +31,7 @@ int TCPConnect(const int& port, const char * addr){
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
     char port_str[6] = {0};
     sprintf(port_str, "%d", port);
 
@@ -74,7 +76,7 @@ int TCPConnect(const int& port, const char * addr){
     return sockfd;
 }
 
-int SendRequest(const int& socket, const char * string)
+int SendTCPRequest(const int& socket, const char * string)
 {
     int r, string_length = 0;
     string_length = SendStringSize(socket, string);

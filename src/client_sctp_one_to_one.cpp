@@ -1,7 +1,7 @@
 
 #include "common.hpp"
-#include "common_tcp.hpp"
-#include "client_tcp_helper.hpp"
+#include "common_sctp.hpp"
+#include "client_sctp_helper.hpp"
 
 
 #include <cstring>
@@ -12,11 +12,12 @@
 
 extern "C" {
     #include <unistd.h>
+    #include <netinet/sctp.h>
 }
 
 
 int Usage(char *argv[]);
-void ShowOptions(void);
+
 
 int main(int argc, char *argv[]){
     int srv_port, sd, r = 0;
@@ -37,20 +38,20 @@ int main(int argc, char *argv[]){
         else {
             srv_port = atoi(argv[4]);
 
-            if ((sd = TCPConnect(srv_port, argv[2])) < 0){
-                perror("main(): TCPConnect()");
+            if ((sd = SCTPConnectOneToOne(srv_port, argv[2])) < 0){
+                perror("main(): SCTPConnect()");
                 return 0;
             }
 
             // Send data
-            r = SendTCPRequest(sd, argv[6]);
+            r = SendSCTP(sd, argv[6]);
             if (r == -1) {
-              perror("main(): SendRequest()");
+              perror("main(): SendSCTP()");
               close(sd);
               return 0;
             }
 
-            r = ReceiveMessage(sd, received_string);
+            r = RecvSCTP(sd, received_string);
             if (r == -1) {
               perror("main(): ReceiveMessage()");
               close(sd);

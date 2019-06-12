@@ -28,7 +28,7 @@ void ShowOptions(void);
 
 int main(int argc, char *argv[]){
     int srv_port, sd, r, err = 0;
-    unsigned char received_string[MAX_STRING_LENGTH] = {};
+    unsigned char received_string[MAX_STRING_LENGTH+1] = {};
     SSL *ssl;
     SSL_CTX* ctx = nullptr;
 

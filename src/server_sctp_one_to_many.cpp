@@ -1,4 +1,4 @@
-#include "server_tcp_helper.hpp"
+#include "server_sctp_helper.hpp"
 #include "common.hpp"
 
 #include <cstring>
@@ -22,9 +22,8 @@ int Usage(int err, char *argv[]);
 int main(int argc, char *argv[])
 {
     int err = 0;
-    int sd, client_sd, server_port = 0;
-    socklen_t slen ;
-	sockaddr_in	sa;
+    int sd, server_port = 0;
+
 
     if (argc==3)  {
         if (strcmp(argv[1],"-p")==0)        {
@@ -42,21 +41,12 @@ int main(int argc, char *argv[])
 
     server_port = atoi(argv[2]);
 
-    sd = TCPListen(server_port, NUM_CLIENTS);
+    sd = SCTPListenOneToMany(server_port, NUM_CLIENTS);
     if (sd == -1) return -1;
 
 
     for (;;) {
-        slen = sizeof(sockaddr_in);
-        client_sd = accept(sd, (struct sockaddr *)&sa,	&slen);
-        if (client_sd < 0){
-            perror("accept() failed");
-            return -1;
-        }
-        std::cout << "--> accept(): OK from "
-        << inet_ntoa(sa.sin_addr)  << std::endl;
-        ProcessTCPClient (client_sd);
-        close(client_sd);
+        ProcessSCTPClientWithServerSocket(sd);
     }
 
     close(sd);

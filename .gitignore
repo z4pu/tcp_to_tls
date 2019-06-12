@@ -1,6 +1,7 @@
 certs/*.key
 certs/*.crt
 certs/*.csr
+certs/*.srl
 bin/client_*
 bin/server_*
 _builds/*

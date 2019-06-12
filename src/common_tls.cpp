@@ -141,7 +141,7 @@ int SendStringSizeTLS(SSL* const ssl, const char * string_to_send) {
     }
 
     length = strlen(string_to_send);
-    if (length > MAX_STRING_LENGTH-1){
+    if (length > MAX_STRING_LENGTH){
         perror("SendStringSizeTLS(): Message too long");
         return -1;
     }
@@ -176,7 +176,7 @@ int SendStringTLS(SSL* const ssl, const char * string) {
     }
 
     length = strlen(string);
-    if (length > MAX_STRING_LENGTH-1){
+    if (length > MAX_STRING_LENGTH){
         perror("SendStringTLS(): Message too long");
         return -1;
     }
@@ -207,7 +207,7 @@ int ReceiveMessageTLS(SSL* const ssl, unsigned char * const inbuff) {
     string_length = r;
 
 
-    if (string_length > (MAX_STRING_LENGTH-1)){
+    if (string_length > (MAX_STRING_LENGTH)){
         std::cerr << "ReceiveMessageTLS(): Message is too big" << std::endl;
         return -1;
     }

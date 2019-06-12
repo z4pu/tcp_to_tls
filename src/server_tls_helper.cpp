@@ -97,7 +97,7 @@ SSL_CTX* TlsInitServerContextFromKeystore(SSL_CTX* ctx, const char* cert_file,
 
 void ProcessTLSClient (SSL * const ssl){
     int r = 0;
-    unsigned char buff[MAX_STRING_LENGTH] = {};
+    unsigned char buff[MAX_STRING_LENGTH+1] = {};
     std::string instring, outstring;
 
     r = ReceiveMessageTLS(ssl, buff);
@@ -110,13 +110,13 @@ void ProcessTLSClient (SSL * const ssl){
 
     r = SendStringSizeTLS(ssl, reinterpret_cast<char*>(buff));
     if (r == -1) {
-        perror("ProcessClient(): SendStringSize(reversed string)");
+        perror("ProcessTLSClient(): SendStringSize(reversed string)");
         return;
     }
 
     r = SendStringTLS(ssl, reinterpret_cast<char*>(buff));
     if (r == -1) {
-        perror("ProcessClient(): SendString(reversed string)");
+        perror("ProcessTLSClient(): SendString(reversed string)");
         return;
     }
 

@@ -2,7 +2,6 @@
 # Installs certauth.crt to the trusted certs folder for the distribution
 # (CentOS or Debian/Ubuntu)
 #
-# Author: Shazina Zaini <shazina@usec.io>
 #
 # Usage:
 #     ./install_ca_cert.sh [options]

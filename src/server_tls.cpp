@@ -1,6 +1,7 @@
 #include "server_tcp_helper.hpp"
 #include "server_tls_helper.hpp"
 #include "common_tls.hpp"
+#include "common.hpp"
 
 #include <cstring>
 #include <cstdio>
