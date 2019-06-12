@@ -1,5 +1,10 @@
 # Introduction
 
+Simple client and server programs that run:
+-   with TCP
+-   with TLS
+-   with SCTP (using connected client sockets)
+-   with SCTP (using the original server socket)
 
 ## Installation requirements
 
