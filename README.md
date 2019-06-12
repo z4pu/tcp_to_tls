@@ -55,6 +55,8 @@ Running `make` builds executables in the `bin` folder:
 |---|---|
 | server_tcp  | Waits for a client to connect and send a string. Reverses it and sends it back to the client. |
 | client_tcp  | Connects to server and sends it a string. Waits for the server to respond. then disconnects.  |
+| server_udp  | As with server_tcp, but using UDP  |
+| client_udp  | As with client_tcp, but using UDP  |
 | server_tls  | As with server_tcp, but over a TLS connection  |
 | client_tls  | As with client_tcp, but over a TLS connection  |
 | server_sctp_one_to_one  | As with server_tcp, but using SCTP one-to-one sockets  |
