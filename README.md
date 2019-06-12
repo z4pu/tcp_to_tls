@@ -33,6 +33,9 @@ cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug -DBUILD_ASAN=ON
 cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug \
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
+cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug \
+-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DBUILD_ASAN=ON
+
 #3  Possible values for -DCMAKE_BUILD_TYPE are
 # Debug, Release, RelWithDebInfo and MinSizeRel
 cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Release
@@ -58,6 +61,18 @@ Running `make` builds executables in the `bin` folder:
 | client_sctp_one_to_one  | As with client_tcp, but using SCTP one-to-one sockets  |
 | server_sctp_one_to_many  | As with server_tcp, but using SCTP one-to-many sockets  |
 | client_sctp_one_to_many  | As with client_tcp, but using SCTP one-to-many sockets  |
+
+**server_udp and client_udp**
+
+~~~bash
+./server_udp -p <port to listen>
+./client_udp -h <server IP> -p <server listening port> \
+    -s <string to reverse>
+
+# EXAMPLE
+./server_udp -p 4000
+./client_udp -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
+~~~
 
 **server_tcp and client_tcp**
 

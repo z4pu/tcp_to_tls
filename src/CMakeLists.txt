@@ -49,6 +49,22 @@ set(openssllibs ${OPENSSL_SSL_CACHE} ${OPENSSL_CRYPTO_CACHE})
 #################################################################
 # Executables
 #################################################################
+
+# server_udp
+add_executable(server_udp
+    server_udp.cpp
+    server_udp_helper.cpp
+    common.cpp
+)
+
+
+# client_udp
+add_executable(client_udp
+    client_udp.cpp
+    client_udp_helper.cpp
+    common.cpp
+)
+
 # server_tcp
 add_executable(server_tcp
     server_tcp.cpp
