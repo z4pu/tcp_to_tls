@@ -141,7 +141,7 @@ void ProcessDTLSClient (const int &server_fd, SSL_CTX * const ctx){
     }
 
     // Now SSL will apply to all data coming from the file descriptor
-    // From OpenSSL 1.1.1b docs:
+    // From OpenSSL 1.1.1c docs:
     // The ssl parameter should be a newly allocated SSL
     // object with its read and write BIOs set, in the same way
     // as might be done for a call to SSL_accept(). Typically,

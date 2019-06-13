@@ -1,7 +1,7 @@
 #################################################################
 # Variables
 #################################################################
-set(OPENSSL_RELEASE_TAG "1.1.1b")
+set(OPENSSL_RELEASE_TAG "1.1.1c")
 
 
 # Ensure that our version of OpenSSL is used instead of system installation
@@ -162,6 +162,35 @@ target_link_libraries(client_sctp_one_to_one
     sctp
 )
 
+# server_sctp_one_to_one_tls
+add_executable(server_sctp_one_to_one_tls
+    server_sctp_one_to_one_tls.cpp
+    server_sctp_helper_one_to_one.cpp
+    server_tls_helper.cpp
+    common_tls.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_one_tls
+    sctp
+    ${openssllibs}
+)
+
+# client_sctp_one_to_one_tls
+add_executable(client_sctp_one_to_one_tls
+    client_sctp_one_to_one_tls.cpp
+    client_sctp_helper_one_to_one.cpp
+    client_tls_helper.cpp
+    common_tls.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(client_sctp_one_to_one_tls
+    sctp
+    ${openssllibs}
+)
+
+# server_sctp_one_to_many
 add_executable(server_sctp_one_to_many
     server_sctp_one_to_many.cpp
     server_sctp_helper_one_to_many.cpp
@@ -183,3 +212,28 @@ add_executable(client_sctp_one_to_many
 target_link_libraries(client_sctp_one_to_many
     sctp
 )
+
+# # server_sctp_one_to_many_tls
+# add_executable(server_sctp_one_to_many_tls
+#     server_sctp_one_to_many_tls.cpp
+#     server_sctp_helper_one_to_many.cpp
+#     common_sctp.cpp
+#     common.cpp
+# )
+# target_link_libraries(server_sctp_one_to_many_tls
+#     sctp
+#     ${openssllibs}
+# )
+#
+#
+# # client_sctp_one_to_many_tls
+# add_executable(client_sctp_one_to_many_tls
+#     client_sctp_one_to_many_tls.cpp
+#     client_sctp_helper_one_to_many.cpp
+#     common_sctp.cpp
+#     common.cpp
+# )
+# target_link_libraries(client_sctp_one_to_many_tls
+#     sctp
+#     ${openssllibs}
+# )

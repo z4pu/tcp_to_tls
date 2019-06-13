@@ -16,7 +16,7 @@ sudo apt-get install -y \
     cmake  # to build program. At least version 3.7 needed
 ~~~
 
--   Install OpenSSL v 1.1.1b using instructions in `docs/INSTALLING_OPENSSL_1.1.1b.md`
+-   Install OpenSSL v 1.1.1c using instructions in `docs/INSTALLING_OPENSSL_1.1.1c.md`
 -   To build the sctp programs, `sudo apt-get install -y libsctp-dev libsctp1`
 
 ## Building the Executables
@@ -128,7 +128,7 @@ cd certs
 ./client_udp -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
-**server_udp and client_udp**
+**server_dtls and client_dtls**
 
 ~~~bash
 ./server_dtls -p <port to listen>
@@ -150,6 +150,18 @@ cd certs
 # EXAMPLE
 ./server_sctp_one_to_one -p 4000
 ./client_sctp_one_to_one -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
+~~~
+
+**server_sctp_one_to_one_tls and client_sctp_one_to_one_tls**
+
+~~~bash
+./server_sctp_one_to_one_tls -p <port to listen>
+./client_sctp_one_to_one_tls -h <server IP> -p <server listening port> \
+    -s <string to reverse>
+
+# EXAMPLE
+./server_sctp_one_to_one_tls -p 4000
+./client_sctp_one_to_one_tls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
 **server_sctp_one_to_many and client_sctp_one_to_many**
