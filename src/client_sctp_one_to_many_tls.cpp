@@ -1,9 +1,10 @@
+
 #include "common.hpp"
+#include "client_sctp_helper_one_to_many.hpp"
+#include "client_sctp_helper_one_to_many_tls.hpp"
 #include "common_tls.hpp"
-#include "client_udp_helper.hpp"
 #include "client_dtls_helper.hpp"
 #include "client_tls_helper.hpp"
-
 
 #include <cstring>
 #include <cstdlib>
@@ -23,6 +24,7 @@ extern "C" {
     #include <openssl/ssl.h>
 }
 
+
 BIO *bio_err;
 
 int Usage(char *argv[]);
@@ -36,6 +38,9 @@ int main(int argc, char *argv[]){
     SSL *ssl;
     SSL_CTX* ctx = nullptr;
 
+    // As of version 1.1.0 OpenSSL will automatically allocate all
+    // resources that it needs so no explicit initialisation is required.
+    // https://wiki.openssl.org/index.php/Library_Initialization
     bio_err=BIO_new_fp(stderr, BIO_NOCLOSE);
 
     if (argc!=7)  {
@@ -59,8 +64,8 @@ int main(int argc, char *argv[]){
 
             BuildAddress(peer_addr, srv_port, argv[2]);
 
-            if ((sd = UDPClientSocket(srv_port, argv[2])) < 0){
-                perror("main(): UDPClientSocket()");
+            if ((sd = SCTPConnectManyToOne(srv_port, argv[2])) < 0){
+                perror("main(): SCTPConnectManyToOne()");
                 return 0;
             }
 
@@ -71,9 +76,9 @@ int main(int argc, char *argv[]){
                 return 0;
             }
 
-            r = SetPeerAsDTLSEndpoint(sd, peer_addr, ssl);
+            r = SetPeerAsSCTPTLSEndpoint(sd, peer_addr, ssl);
             if (r == -1) {
-                OSSLErrorHandler("SetPeerAsDTLSEndpoint()");
+                OSSLErrorHandler("SetPeerAsSCTPTLSEndpoint()");
                 SSL_free(ssl);
                 close(sd);
                 SSL_CTX_free(ctx);

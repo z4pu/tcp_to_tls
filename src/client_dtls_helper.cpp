@@ -85,13 +85,13 @@ if (!FileExists(trusted_certs_file))  {
     return ctx;
 }
 
-int SetPeerasTLSEndpoint(const int &peer_fd, const sockaddr_in &peer_addr, SSL * const ssl)
+int SetPeerAsDTLSEndpoint(const int &peer_fd, const sockaddr_in &peer_addr, SSL * const ssl)
 {
     BIO * dgramBio = nullptr;
 
     dgramBio = BIO_new_dgram(peer_fd, BIO_NOCLOSE);
     if (!dgramBio) {
-        OSSLErrorHandler("SetPeerasTLSEndpoint(): BIO_new_dgram(): cannot set peer fd");
+        OSSLErrorHandler("SetPeerAsDTLSEndpoint(): BIO_new_dgram(): cannot set peer fd");
         return -1;
     }
 

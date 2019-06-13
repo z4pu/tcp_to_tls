@@ -213,27 +213,36 @@ target_link_libraries(client_sctp_one_to_many
     sctp
 )
 
-# # server_sctp_one_to_many_tls
-# add_executable(server_sctp_one_to_many_tls
-#     server_sctp_one_to_many_tls.cpp
-#     server_sctp_helper_one_to_many.cpp
-#     common_sctp.cpp
-#     common.cpp
-# )
-# target_link_libraries(server_sctp_one_to_many_tls
-#     sctp
-#     ${openssllibs}
-# )
-#
-#
-# # client_sctp_one_to_many_tls
-# add_executable(client_sctp_one_to_many_tls
-#     client_sctp_one_to_many_tls.cpp
-#     client_sctp_helper_one_to_many.cpp
-#     common_sctp.cpp
-#     common.cpp
-# )
-# target_link_libraries(client_sctp_one_to_many_tls
-#     sctp
-#     ${openssllibs}
-# )
+# server_sctp_one_to_many_tls
+add_executable(server_sctp_one_to_many_tls
+    server_sctp_one_to_many_tls.cpp
+    server_sctp_helper_one_to_many_tls.cpp
+    server_sctp_helper_one_to_many.cpp
+    server_tls_helper.cpp
+    server_dtls_helper.cpp
+    ck_secrets_vault.c
+    common_sctp.cpp
+    common_tls.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_many_tls
+    sctp
+    ${openssllibs}
+)
+
+
+# client_sctp_one_to_many_tls
+add_executable(client_sctp_one_to_many_tls
+    client_sctp_one_to_many_tls.cpp
+    client_sctp_helper_one_to_many_tls.cpp
+    client_sctp_helper_one_to_many.cpp
+    client_dtls_helper.cpp
+    client_tls_helper.cpp
+    common_tls.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(client_sctp_one_to_many_tls
+    sctp
+    ${openssllibs}
+)
