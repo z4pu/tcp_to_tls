@@ -1,6 +1,7 @@
 #include "common.hpp"
 #include "common_tls.hpp"
 #include "client_udp_helper.hpp"
+#include "client_dtls_helper.hpp"
 #include "client_tls_helper.hpp"
 
 

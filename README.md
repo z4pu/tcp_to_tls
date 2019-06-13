@@ -1,6 +1,8 @@
 # Introduction
 
 Simple client and server programs that run:
+-   with UDP
+-   with DTLS
 -   with TCP
 -   with TLS
 -   with SCTP (using connected client socket)
@@ -54,26 +56,18 @@ Running `make` builds executables in the `bin` folder:
 |---|---|
 | server_tcp  | Waits for a client to connect and send a string. Reverses it and sends it back to the client. |
 | client_tcp  | Connects to server and sends it a string. Waits for the server to respond. then disconnects.  |
-| server_udp  | As with server_tcp, but using UDP  |
-| client_udp  | As with client_tcp, but using UDP  |
 | server_tls  | As with server_tcp, but over a TLS connection  |
 | client_tls  | As with client_tcp, but over a TLS connection  |
+| server_udp  | As with server_tcp, but using UDP  |
+| client_udp  | As with client_tcp, but using UDP  |
+| server_dtls  | As with server_udp, but over DTLS |
+| client_dtls  | As with client_udp, but over DTLS  |
 | server_sctp_one_to_one  | As with server_tcp, but using SCTP one-to-one sockets  |
 | client_sctp_one_to_one  | As with client_tcp, but using SCTP one-to-one sockets  |
 | server_sctp_one_to_many  | As with server_tcp, but using SCTP one-to-many sockets  |
 | client_sctp_one_to_many  | As with client_tcp, but using SCTP one-to-many sockets  |
 
-**server_udp and client_udp**
 
-~~~bash
-./server_udp -p <port to listen>
-./client_udp -h <server IP> -p <server listening port> \
-    -s <string to reverse>
-
-# EXAMPLE
-./server_udp -p 4000
-./client_udp -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
-~~~
 
 **server_tcp and client_tcp**
 
@@ -120,6 +114,30 @@ cd certs
 # EXAMPLE
 ./server_tls -p 4000
 ./client_tls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
+~~~
+
+**server_udp and client_udp**
+
+~~~bash
+./server_udp -p <port to listen>
+./client_udp -h <server IP> -p <server listening port> \
+    -s <string to reverse>
+
+# EXAMPLE
+./server_udp -p 4000
+./client_udp -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
+~~~
+
+**server_udp and client_udp**
+
+~~~bash
+./server_dtls -p <port to listen>
+./client_dtls -h <server IP> -p <server listening port> \
+    -s <string to reverse>
+
+# EXAMPLE
+./server_dtls -p 4000
+./client_dtls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
 **server_sctp_one_to_one and client_sctp_one_to_one**

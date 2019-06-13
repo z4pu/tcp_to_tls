@@ -37,6 +37,10 @@ message(STATUS "INCLUDE_DIRECTORIES ${test_INCLUDE_DIRECTORIES}")
 # Directories containing libraries for linker
 #################################################################
 
+if (BUILD_ASAN)
+  SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+endif()
+
 link_directories(
     ${OPENSSL_DIR}/lib # OpenSSL ssl and crypto libraries
 )
@@ -68,6 +72,9 @@ add_executable(client_udp
 # server_dtls
 add_executable(server_dtls
     server_dtls.cpp
+    server_dtls_helper.cpp
+    ck_secrets_vault.c
+    common_tls.cpp
     server_udp_helper.cpp
     common.cpp
 )
@@ -79,6 +86,7 @@ target_link_libraries(server_dtls
 # client_dtls
 add_executable(client_dtls
     client_dtls.cpp
+    client_dtls_helper.cpp
     client_tls_helper.cpp
     client_udp_helper.cpp
     common_tls.cpp

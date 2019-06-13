@@ -12,10 +12,6 @@ extern "C" {
 SSL_CTX*  TLSInitClientContextFromKeystore(SSL_CTX* ctx, const char* cert_file,
     const char* privkey_file, const char* ca_cert_file);
 
-SSL_CTX*  DTLSInitClientContextFromKeystore(SSL_CTX* ctx, const char* cert_file,
-    const char* privkey_file, const char* ca_cert_file);
-
-int SetPeerasTLSEndpoint(const int &peer_fd, const sockaddr_in &ser_addr, SSL * const ssl);
 
 int SendRequestTLS(SSL * const ssl, const char * string);
 

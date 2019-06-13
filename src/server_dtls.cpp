@@ -1,7 +1,10 @@
 #include "server_udp_helper.hpp"
+#include "server_dtls_helper.hpp"
 #include "server_tls_helper.hpp"
 #include "common_tls.hpp"
 #include "common.hpp"
+#include "ck_secrets_vault.h"
+
 
 #include <cstring>
 #include <cstdio>
@@ -34,9 +37,6 @@ int main(int argc, char *argv[])
 {
     int err, r = 0;
     int sd, server_port = 0;
-    socklen_t slen ;
-	sockaddr_in	sa;
-    SSL *ssl;
     SSL_CTX* ctx = nullptr;
     sigset_t sigset;
 
@@ -72,6 +72,8 @@ int main(int argc, char *argv[])
     }
 
     server_port = atoi(argv[2]);
+
+    std::cout << "Generated " << ck_secrets_generate(CK_SECRET_MAX) << " cookie-secrets for DTLS\n";
 
     sd = UDPBind(server_port);
     if (sd == -1) return -1;
