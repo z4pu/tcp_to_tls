@@ -1,12 +1,14 @@
 # Introduction
 
-Simple client and server programs that run:
+Simple toy client and server programs to show how OpenSSL can be used to secure connections. These run:
 -   with UDP
 -   with DTLS
 -   with TCP
 -   with TLS
 -   with SCTP (using connected client socket)
 -   with SCTP (using the original server socket)
+-   with SCTP and TLS (using connected client socket)
+-   with SCTP and TLS (using the original server socket)
 
 ## Installation requirements
 
@@ -17,7 +19,7 @@ sudo apt-get install -y \
 ~~~
 
 -   Install OpenSSL v 1.1.1c using instructions in `docs/INSTALLING_OPENSSL_1.1.1c.md`
--   To build the sctp programs, `sudo apt-get install -y libsctp-dev libsctp1`
+-   To build the sctp programs, you'll need the kernel SCTP headers, `sudo apt-get install -y libsctp-dev libsctp1`
 
 ## Building the Executables
 
