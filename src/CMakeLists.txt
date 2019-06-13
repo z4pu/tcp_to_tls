@@ -143,7 +143,7 @@ target_link_libraries(client_tls
 # server_sctp_one_to_one
 add_executable(server_sctp_one_to_one
     server_sctp_one_to_one.cpp
-    server_sctp_helper.cpp
+    server_sctp_helper_one_to_one.cpp
     common_sctp.cpp
     common.cpp
 )
@@ -154,7 +154,7 @@ target_link_libraries(server_sctp_one_to_one
 # client_sctp_one_to_one
 add_executable(client_sctp_one_to_one
     client_sctp_one_to_one.cpp
-    client_sctp_helper.cpp
+    client_sctp_helper_one_to_one.cpp
     common_sctp.cpp
     common.cpp
 )
@@ -164,7 +164,7 @@ target_link_libraries(client_sctp_one_to_one
 
 add_executable(server_sctp_one_to_many
     server_sctp_one_to_many.cpp
-    server_sctp_helper.cpp
+    server_sctp_helper_one_to_many.cpp
     common_sctp.cpp
     common.cpp
 )
@@ -176,7 +176,7 @@ target_link_libraries(server_sctp_one_to_many
 # client_sctp_one_to_many
 add_executable(client_sctp_one_to_many
     client_sctp_one_to_many.cpp
-    client_sctp_helper.cpp
+    client_sctp_helper_one_to_many.cpp
     common_sctp.cpp
     common.cpp
 )
