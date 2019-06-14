@@ -58,15 +58,15 @@ Running `make` builds executables in the `bin` folder:
 |---|---|
 | server_tcp<br>server_tcp_thread  | Waits for a client to connect and send a string. Reverses it and sends it back to the client. |
 | client_tcp  | Connects to server and sends it a string. Waits for the server to respond, then disconnects.  |
-| server_tls  | As with server_tcp, but over a TLS connection  |
+| server_tls<br>server_tls_thread  | As with server_tcp, but over a TLS connection  |
 | client_tls  | As with client_tcp, but over a TLS connection  |
 | server_udp  | As with server_tcp, but using UDP  |
 | client_udp  | As with client_tcp, but using UDP  |
 | server_dtls  | As with server_udp, but over DTLS |
 | client_dtls  | As with client_udp, but over DTLS  |
-| server_sctp_one_to_one  | As with server_tcp, but using SCTP one-to-one sockets. The function calls are similar to those for server_tcp  |
+| server_sctp_one_to_one<br>server_sctp_one_to_one_thread  | As with server_tcp, but using SCTP one-to-one sockets. The function calls are similar to those for server_tcp  |
 | client_sctp_one_to_one  | As with client_tcp, but using SCTP one-to-one sockets. The function calls are similar to those for client_tcp  |
-| server_sctp_one_to_one_tls  | As with server_tcp, but using SCTP one-to-one sockets with TLS. The function calls are similar to those for server_tls  |
+| server_sctp_one_to_one_tls<br>server_sctp_one_to_one_tls_thread  | As with server_tcp, but using SCTP one-to-one sockets with TLS. The function calls are similar to those for server_tls  |
 | client_sctp_one_to_one_tls  | As with client_tcp, but using SCTP one-to-one sockets with TLS. The function calls are similar to those for client_tls  |
 | server_sctp_one_to_many_tls  | As with server_tcp, but using SCTP one-to-many sockets with TLS. The function calls are similar to those for server_dtls  |
 | client_sctp_one_to_many_tls  | As with client_tcp, but using SCTP one-to-many sockets with TLS. The function calls are similar to those for client_dtls |
@@ -175,8 +175,8 @@ cd certs
 
 # EXAMPLE
 ./server_sctp_one_to_one_tls -p 4000
+# Multi-threaded version
 ./server_sctp_one_to_one_tls_thread -p 4000
-
 ./client_sctp_one_to_one_tls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
