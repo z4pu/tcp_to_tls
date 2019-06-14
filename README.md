@@ -56,7 +56,7 @@ Running `make` builds executables in the `bin` folder:
 
 | Executable name | Description |
 |---|---|
-| server_tcp  | Waits for a client to connect and send a string. Reverses it and sends it back to the client. |
+| server_tcp<br>server_tcp_thread  | Waits for a client to connect and send a string. Reverses it and sends it back to the client. |
 | client_tcp  | Connects to server and sends it a string. Waits for the server to respond, then disconnects.  |
 | server_tls  | As with server_tcp, but over a TLS connection  |
 | client_tls  | As with client_tcp, but over a TLS connection  |
@@ -81,6 +81,8 @@ Running `make` builds executables in the `bin` folder:
 
 # EXAMPLE
 ./server_tcp -p 4000
+# Multi-threaded version
+./server_tcp_thread -p 4000
 ./client_tcp -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 

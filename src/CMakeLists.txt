@@ -34,6 +34,13 @@ get_property(test_INCLUDE_DIRECTORIES DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 message(STATUS "INCLUDE_DIRECTORIES ${test_INCLUDE_DIRECTORIES}")
 
 #################################################################
+# Include pthreads library
+#################################################################
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
+#################################################################
 # Directories containing libraries for linker
 #################################################################
 
@@ -82,6 +89,19 @@ target_link_libraries(server_dtls
     ${openssllibs}
 )
 
+# # server_dtls_thread
+# add_executable(server_dtls_thread
+#     server_dtls_thread.cpp
+#     # server_dtls_helper.cpp
+#     # ck_secrets_vault.c
+#     # common_tls.cpp
+#     # server_udp_helper.cpp
+#     # common.cpp
+# )
+# target_link_libraries(server_dtls_thread
+#     ${openssllibs}
+# )
+
 
 # client_dtls
 add_executable(client_dtls
@@ -103,6 +123,19 @@ add_executable(server_tcp
     server_tcp_helper.cpp
     common_tcp.cpp
     common.cpp
+)
+
+# server_tcp_thread
+add_executable(server_tcp_thread
+    server_tcp_thread.cpp
+    thread_tcp_helper.cpp
+    thread_helper.cpp
+    server_tcp_helper.cpp
+    common_tcp.cpp
+    common.cpp
+)
+target_link_libraries(server_tcp_thread
+    Threads::Threads
 )
 
 

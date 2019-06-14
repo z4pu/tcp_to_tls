@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
     int sd, client_sd, server_port = 0;
     socklen_t slen ;
 	sockaddr_in	sa;
+    int client_port = 0;
 
     if (argc==3)  {
         if (strcmp(argv[1],"-p")==0)        {
@@ -53,8 +54,9 @@ int main(int argc, char *argv[])
             perror("accept() failed");
             return -1;
         }
+        client_port = ntohs(sa.sin_port);
         std::cout << "--> accept(): OK from "
-        << inet_ntoa(sa.sin_addr)  << std::endl;
+        << inet_ntoa(sa.sin_addr)  << " and port " << client_port <<  std::endl;
         ProcessTCPClient (client_sd);
         close(client_sd);
     }
