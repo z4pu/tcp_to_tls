@@ -1,7 +1,7 @@
 #################################################################
 # Variables
 #################################################################
-set(OPENSSL_RELEASE_TAG "1.1.1c")
+set(OPENSSL_RELEASE_TAG "1.1.1b")
 
 
 # Ensure that our version of OpenSSL is used instead of system installation
@@ -237,6 +237,24 @@ add_executable(server_sctp_one_to_one_tls
 target_link_libraries(server_sctp_one_to_one_tls
     sctp
     ${openssllibs}
+)
+
+# server_sctp_one_to_one_tls_thread
+add_executable(server_sctp_one_to_one_tls_thread
+    server_sctp_one_to_one_tls_thread.cpp
+    server_sctp_helper_one_to_one.cpp
+    thread_sctp_tls_helper.cpp
+    thread_tls_helper.cpp
+    thread_helper.cpp
+    server_tls_helper.cpp
+    common_tls.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_one_tls_thread
+    sctp
+    ${openssllibs}
+    Threads::Threads
 )
 
 # client_sctp_one_to_one_tls

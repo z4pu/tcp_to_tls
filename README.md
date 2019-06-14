@@ -175,6 +175,8 @@ cd certs
 
 # EXAMPLE
 ./server_sctp_one_to_one_tls -p 4000
+./server_sctp_one_to_one_tls_thread -p 4000
+
 ./client_sctp_one_to_one_tls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
