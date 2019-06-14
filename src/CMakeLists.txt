@@ -200,6 +200,20 @@ target_link_libraries(server_sctp_one_to_one
     sctp
 )
 
+# server_sctp_one_to_one_thread
+add_executable(server_sctp_one_to_one_thread
+    server_sctp_one_to_one_thread.cpp
+    server_sctp_helper_one_to_one.cpp
+    thread_sctp_helper.cpp
+    thread_helper.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_one_thread
+    sctp
+    Threads::Threads
+)
+
 # client_sctp_one_to_one
 add_executable(client_sctp_one_to_one
     client_sctp_one_to_one.cpp

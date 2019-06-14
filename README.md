@@ -76,6 +76,8 @@ Running `make` builds executables in the `bin` folder:
 
 ~~~bash
 ./server_tcp -p <port to listen>
+# Multi-threaded version
+./server_tcp_thread -p <port to listen>
 ./client_tcp -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
@@ -113,11 +115,14 @@ cd certs
 
 # Run the executables
 ./server_tls -p <port to listen>
+./server_tls_thread -p <port to listen>
 ./client_tls -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
 # EXAMPLE
 ./server_tls -p 4000
+# Multi-threaded version
+./server_tls_thread -p 4000
 ./client_tls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
@@ -149,11 +154,15 @@ cd certs
 
 ~~~bash
 ./server_sctp_one_to_one -p <port to listen>
+# Multi-threaded version
+./server_sctp_one_to_one_thread -p <port to listen>
 ./client_sctp_one_to_one -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
 # EXAMPLE
 ./server_sctp_one_to_one -p 4000
+# Multi-threaded version
+./server_sctp_one_to_one_thread -p 4000
 ./client_sctp_one_to_one -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
