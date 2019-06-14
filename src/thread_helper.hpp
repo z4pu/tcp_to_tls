@@ -18,6 +18,11 @@ struct tcp_client_thread_args{
   int connection_number;
 };
 
+struct tls_client_thread_args{
+  int server_sd;
+  SSL_CTX * ctx;
+};
+
 struct dtls_client_thread_args{
   int sd;
   SSL_CTX * ctx;
@@ -29,6 +34,8 @@ struct dtls_client_thread_args{
 };
 
 extern pthread_mutex_t sd_mutex;
+extern pthread_mutex_t *crypto_mutexes;
+extern pthread_mutex_t ctx_lock;
 
 void * SignalCatcher(void * arg);
 

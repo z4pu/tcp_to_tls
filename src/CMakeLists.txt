@@ -160,6 +160,22 @@ target_link_libraries(server_tls
     ${openssllibs}
 )
 
+# server_tls_thread
+add_executable(server_tls_thread
+    server_tls_thread.cpp
+    server_tcp_helper.cpp
+    server_tls_helper.cpp
+    thread_tls_helper.cpp
+    thread_helper.cpp
+    common_tls.cpp
+    common_tcp.cpp
+    common.cpp
+)
+target_link_libraries(server_tls_thread
+    ${openssllibs}
+    Threads::Threads
+)
+
 # client_tls
 add_executable(client_tls
     client_tls.cpp
