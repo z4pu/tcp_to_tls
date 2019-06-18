@@ -37,7 +37,8 @@ cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug -DBUILD_ASAN=ON
 cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug \
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
-cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DBUILD_ASAN=ON
+cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug \
+-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DBUILD_ASAN=ON
 
 #3  Possible values for -DCMAKE_BUILD_TYPE are
 # Debug, Release, RelWithDebInfo and MinSizeRel
@@ -60,7 +61,7 @@ Running `make` builds executables in the `bin` folder:
 | client_tcp  | Connects to server and sends it a string. Waits for the server to respond, then disconnects.  |
 | server_tls<br>server_tls_thread  | As with server_tcp, but over a TLS connection  |
 | client_tls  | As with client_tcp, but over a TLS connection  |
-| server_udp  | As with server_tcp, but using UDP  |
+| server_udp<br>server_udp_thread  | As with server_tcp, but using UDP  |
 | client_udp  | As with client_tcp, but using UDP  |
 | server_dtls  | As with server_udp, but over DTLS |
 | client_dtls  | As with client_udp, but over DTLS  |
@@ -130,11 +131,13 @@ cd certs
 
 ~~~bash
 ./server_udp -p <port to listen>
+./server_udp_thread -p <port to listen>
 ./client_udp -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
 # EXAMPLE
 ./server_udp -p 4000
+./server_udp_thread -p 4000
 ./client_udp -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
@@ -142,11 +145,13 @@ cd certs
 
 ~~~bash
 ./server_dtls -p <port to listen>
+./server_dtls_thread -p <port to listen>
 ./client_dtls -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
 # EXAMPLE
 ./server_dtls -p 4000
+./server_dtls_thread -p 4000
 ./client_dtls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
@@ -184,22 +189,26 @@ cd certs
 
 ~~~bash
 ./server_sctp_one_to_many -p <port to listen>
+./server_sctp_one_to_many_thread -p <port to listen>
 ./client_sctp_one_to_many -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
 # EXAMPLE
 ./server_sctp_one_to_many -p 4000
+./server_sctp_one_to_many_thread -p 4000
 ./client_sctp_one_to_many -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~
 
-**server_sctp_one_to_many and client_sctp_one_to_many_tls**
+**server_sctp_one_to_many_tls and client_sctp_one_to_many_tls**
 
 ~~~bash
 ./server_sctp_one_to_many_tls -p <port to listen>
+./server_sctp_one_to_many_tls_thread -p <port to listen>
 ./client_sctp_one_to_many_tls -h <server IP> -p <server listening port> \
     -s <string to reverse>
 
 # EXAMPLE
 ./server_sctp_one_to_many_tls -p 4000
+./server_sctp_one_to_many_tls_thread -p 4000
 ./client_sctp_one_to_many_tls -h 127.0.0.1 -p 4000 -s dhw873g17GBFb2712
 ~~~

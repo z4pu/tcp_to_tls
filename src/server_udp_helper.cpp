@@ -100,7 +100,7 @@ int UDPBind(const int& port)
 	return (sd);
 }
 
-void ProcessUDPClient (const int& server_sd)
+int ProcessUDPClient (const int& server_sd)
 {
     socklen_t peer_addr_len;
     struct sockaddr_storage peer_addr;
@@ -114,7 +114,7 @@ void ProcessUDPClient (const int& server_sd)
                 (struct sockaddr *) &peer_addr, &peer_addr_len);
     if (r == -1)   {
         perror("ProcessUDPClient(): recvfrom()");
-        return;
+        return -1;
     }
     std::cout << "--> ProcessUDPClient(): incoming string "
         << buff << std::endl;
@@ -126,7 +126,7 @@ void ProcessUDPClient (const int& server_sd)
         printf("ProcessUDPClient(): Received %ld bytes from %s:%s\n", (long)r, host, service);
     } else {
         fprintf(stderr, "ProcessUDPClient(): getnameinfo: %s\n", gai_strerror(s));
-        return;
+        return -1;
     }
 
     ReverseString(reinterpret_cast<char*>(buff));
@@ -135,10 +135,11 @@ void ProcessUDPClient (const int& server_sd)
             peer_addr_len);
     if (c != r) {
         perror("ProcessUDPClient(): sendto(): Error sending response");
+        return -1;
     }
 
     std::cout << "--> ProcessUDPClient(): sent reversed string "
         << buff << std::endl;
 
-    return;
+    return 0;
 }

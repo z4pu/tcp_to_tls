@@ -1,5 +1,7 @@
-#include "thread_sctp_helper.hpp"
+#include "thread_sctp_helper_one_to_one.hpp"
+#include "thread_sctp_one_to_one_tls_helper.hpp"
 #include "thread_helper.hpp"
+#include "thread_tls_helper.hpp"
 #include "server_tcp_helper.hpp"
 #include "server_sctp_helper_one_to_one.hpp"
 
@@ -15,18 +17,20 @@ extern "C" {
     #include <unistd.h>
 }
 
-void * SCTPClientThread(void* args) {
+void * SCTPTLSOneToOneClientThread(void* args) {
     printf("CLIENT TID %lu\n", (unsigned long)pthread_self());
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
 
-	tcp_client_thread_args *thrd_args = (tcp_client_thread_args *)args;
+	tls_client_thread_args *thrd_args = (tls_client_thread_args *)args;
 	socklen_t slen ;
 	sockaddr_in	sa;
 	int client_sd, client_port = 0;
 	char str[INET_ADDRSTRLEN];
+    SSL_CTX* ctx = nullptr;
 
 
 	int sd = thrd_args->server_sd;
+    ctx = thrd_args->ctx;
 
 	for (;;)	{
 		slen = sizeof(sockaddr_in);
@@ -52,7 +56,7 @@ void * SCTPClientThread(void* args) {
 
 		std::cout << "TID " << (unsigned long)pthread_self() << " Client connected from " << str << " and port " << client_port <<  std::endl;
 
-		ProcessSCTPClientWithClientSocket (client_sd);
+		HandleTLSClientInThread (client_sd, ctx);
 
 		close(client_sd);
 	}

@@ -22,7 +22,7 @@ int Usage(int err, char *argv[]);
 int main(int argc, char *argv[])
 {
     int err = 0;
-    int sd, server_port = 0;
+    int sd, server_port, r = 0;
 
     if (argc==3)  {
         if (strcmp(argv[1],"-p")==0)        {
@@ -44,7 +44,8 @@ int main(int argc, char *argv[])
     if (sd == -1) return -1;
 
     for (;;) {
-        ProcessUDPClient(sd);
+        r = ProcessUDPClient(sd);
+        if (r == -1) break;
     }
 
     close(sd);

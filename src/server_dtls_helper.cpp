@@ -147,6 +147,8 @@ void ProcessDTLSClient (const int &server_fd, SSL_CTX * const ctx){
     // as might be done for a call to SSL_accept(). Typically,
     // for DTLS, the read BIO will be in an "unconnected"
     // state and thus capable of receiving messages from any peer.
+    //void SSL_set_bio(SSL *ssl, BIO *rbio, BIO *wbio);
+    // rbio is used for SSL_read, wbio is used for SSL_write
     SSL_set_bio(ssl, dgramBio, dgramBio);
     SSL_set_accept_state(ssl);
 

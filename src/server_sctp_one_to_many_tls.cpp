@@ -4,6 +4,7 @@
 #include "common_tls.hpp"
 #include "server_tls_helper.hpp"
 #include "server_dtls_helper.hpp"
+#include "ck_secrets_vault.h"
 
 #include <cstring>
 #include <cstdio>
@@ -68,6 +69,7 @@ int main(int argc, char *argv[])
     }
 
     server_port = atoi(argv[2]);
+    std::cout << "Generated " << ck_secrets_generate(CK_SECRET_MAX) << " cookie-secrets for DTLS\n";
 
     sd = SCTPListenOneToMany(server_port, NUM_CLIENTS);
     if (sd == -1) return -1;

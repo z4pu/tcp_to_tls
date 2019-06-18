@@ -1,7 +1,7 @@
 #include "server_sctp_helper_one_to_one.hpp"
 #include "common.hpp"
 #include "thread_helper.hpp"
-#include "thread_sctp_helper.hpp"
+#include "thread_sctp_helper_one_to_one.hpp"
 
 #include <cstring>
 #include <cstdio>
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         args.server_sd = sd;
         args.connection_number = i+1;
 
-        status = pthread_create(&tid[i], NULL, SCTPClientThread, (void *)&args);
+        status = pthread_create(&tid[i], NULL, SCTPClientOneToOneThread, (void *)&args);
         if (status != 0)    {
             printf("pthread_create() failed : %s\n", strerror(status));
             close(sd); /* passive Socket closed */

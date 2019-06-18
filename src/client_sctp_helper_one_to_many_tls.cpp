@@ -23,7 +23,7 @@ int SetPeerAsSCTPTLSEndpoint(const int &peer_fd, const sockaddr_in &peer_addr, S
 
     dgramBio = BIO_new_dgram(peer_fd, BIO_NOCLOSE);
     if (!dgramBio) {
-        OSSLErrorHandler("SetPeerAsSCTPDTLSEndpoint(): BIO_new_dgram_sctp(): cannot set peer fd");
+        OSSLErrorHandler("SetPeerAsSCTPDTLSEndpoint(): BIO_new_dgram(): cannot set peer fd");
         return -1;
     }
 

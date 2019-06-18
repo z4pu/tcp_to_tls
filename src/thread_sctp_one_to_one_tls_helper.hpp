@@ -1,0 +1,7 @@
+#ifndef THREAD_SCTP_ONE_TO_ONE_TLS_HELPER_HPP
+#define THREAD_SCTP_ONE_TO_ONE_TLS_HELPER_HPP
+
+
+void * SCTPTLSOneToOneClientThread(void* args);
+
+#endif /* THREAD_SCTP_ONE_TO_ONE_TLS_HELPER_HPP */

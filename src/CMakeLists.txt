@@ -1,7 +1,7 @@
 #################################################################
 # Variables
 #################################################################
-set(OPENSSL_RELEASE_TAG "1.1.1b")
+set(OPENSSL_RELEASE_TAG "1.1.1c")
 
 
 # Ensure that our version of OpenSSL is used instead of system installation
@@ -68,6 +68,16 @@ add_executable(server_udp
     common.cpp
 )
 
+add_executable(server_udp_thread
+    server_udp_thread.cpp
+    server_udp_helper.cpp
+    thread_udp_helper.cpp
+    thread_helper.cpp
+    common.cpp
+)
+target_link_libraries(server_udp_thread
+    Threads::Threads
+)
 
 # client_udp
 add_executable(client_udp
@@ -89,18 +99,23 @@ target_link_libraries(server_dtls
     ${openssllibs}
 )
 
-# # server_dtls_thread
-# add_executable(server_dtls_thread
-#     server_dtls_thread.cpp
-#     # server_dtls_helper.cpp
-#     # ck_secrets_vault.c
-#     # common_tls.cpp
-#     # server_udp_helper.cpp
-#     # common.cpp
-# )
-# target_link_libraries(server_dtls_thread
-#     ${openssllibs}
-# )
+# server_dtls_thread
+add_executable(server_dtls_thread
+    server_dtls_thread.cpp
+    server_dtls_helper.cpp
+    server_tls_helper.cpp
+    thread_dtls_helper.cpp
+    thread_tls_helper.cpp
+    thread_helper.cpp
+    ck_secrets_vault.c
+    common_tls.cpp
+    server_udp_helper.cpp
+    common.cpp
+)
+target_link_libraries(server_dtls_thread
+    ${openssllibs}
+    Threads::Threads
+)
 
 
 # client_dtls
@@ -204,7 +219,7 @@ target_link_libraries(server_sctp_one_to_one
 add_executable(server_sctp_one_to_one_thread
     server_sctp_one_to_one_thread.cpp
     server_sctp_helper_one_to_one.cpp
-    thread_sctp_helper.cpp
+    thread_sctp_helper_one_to_one.cpp
     thread_helper.cpp
     common_sctp.cpp
     common.cpp
@@ -243,7 +258,7 @@ target_link_libraries(server_sctp_one_to_one_tls
 add_executable(server_sctp_one_to_one_tls_thread
     server_sctp_one_to_one_tls_thread.cpp
     server_sctp_helper_one_to_one.cpp
-    thread_sctp_tls_helper.cpp
+    thread_sctp_one_to_one_tls_helper.cpp
     thread_tls_helper.cpp
     thread_helper.cpp
     server_tls_helper.cpp
@@ -280,6 +295,20 @@ target_link_libraries(server_sctp_one_to_many
     sctp
 )
 
+# server_sctp_one_to_many_thread
+add_executable(server_sctp_one_to_many_thread
+    server_sctp_one_to_many_thread.cpp
+    server_sctp_helper_one_to_many.cpp
+    thread_sctp_helper_one_to_many.cpp
+    thread_helper.cpp
+    common_sctp.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_many_thread
+    sctp
+    Threads::Threads
+)
+
 
 # client_sctp_one_to_many
 add_executable(client_sctp_one_to_many
@@ -305,7 +334,25 @@ target_link_libraries(server_sctp_one_to_many_tls
     sctp
     ${openssllibs}
 )
-
+# server_sctp_one_to_many_tls_thread
+add_executable(server_sctp_one_to_many_tls_thread
+    server_sctp_one_to_many_tls_thread.cpp
+    server_sctp_helper_one_to_many_tls.cpp
+    server_sctp_helper_one_to_many.cpp
+    thread_sctp_one_to_many_tls_helper.cpp
+    server_dtls_helper.cpp
+    server_tls_helper.cpp
+    thread_dtls_helper.cpp
+    thread_tls_helper.cpp
+    ck_secrets_vault.c
+    common_tls.cpp
+    common.cpp
+)
+target_link_libraries(server_sctp_one_to_many_tls_thread
+    sctp
+    ${openssllibs}
+    Threads::Threads
+)
 
 # client_sctp_one_to_many_tls
 add_executable(client_sctp_one_to_many_tls
