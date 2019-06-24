@@ -24,7 +24,6 @@ void * UDPClientThread(void* args) {
 	int server_sd = thrd_args->server_sd;
 
     for (;;)	{
-		pthread_mutex_lock (&sd_mutex);
 		r = ProcessUDPClient (server_sd);
         if (r == -1) {
             printf("CLIENT TID %lu\n", (unsigned long)pthread_self());
@@ -32,8 +31,6 @@ void * UDPClientThread(void* args) {
         }
         std::cout << "Ending for() loop for ";
         printf("CLIENT TID %lu\n", (unsigned long)pthread_self());
-		pthread_mutex_unlock(&sd_mutex);
-
 	}
 
 	printf("CLIENT TID %lu\t: Something funny happened, we should not be here\n", (unsigned long)pthread_self());

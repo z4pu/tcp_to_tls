@@ -46,6 +46,7 @@ pthread_mutex_t *crypto_mutexes = NULL;
 
 
 BIO *bio_err;
+bool server_on;
 
 
 int Usage(int err, char *argv[]);
@@ -66,7 +67,8 @@ int main(int argc, char *argv[])
     struct sockaddr_in server_addr;
     dtls_client_thread_args args;
     memset(&args, 0, sizeof(struct dtls_client_thread_args));
-    pthread_t tid = {};
+    pthread_t tid;
+    server_on = true;
 
     // As of version 1.1.0 OpenSSL will automatically allocate all
     // resources that it needs so no explicit initialisation is required.
@@ -120,8 +122,9 @@ int main(int argc, char *argv[])
     printf("TID %lu\t: Created Signal Thread ID %lu\n",
     	(unsigned long)pthread_self(), (unsigned long)tid_sig_handler);
 
-    while (1) { // Set up BIOs and SSL for cookie exchange
+    while (server_on) { // Set up BIOs and SSL for cookie exchange
         memset(&client_addr, 0, sizeof(struct sockaddr_in));
+        memset(&tid, 0, sizeof(pthread_t));
 
 		/* Create BIO */
         mutexLock(&sd_mutex);
@@ -150,7 +153,8 @@ int main(int argc, char *argv[])
         mutexLock(&ssl_lock);
 		SSL_set_bio(ssl, cookie_bio, cookie_bio);
 		SSL_set_options(ssl, SSL_OP_COOKIE_EXCHANGE);
-		while (DTLSv1_listen(ssl, (BIO_ADDR *) &client_addr) <= 0);
+		while (DTLSv1_listen(ssl, (BIO_ADDR *) &client_addr) <= 0 && server_on);
+        if (!server_on) break;
         mutexUnlock(&ssl_lock);
 
         std::cout<< std::endl <<"Cookie exchange with " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << " OK!"<<  std::endl;
@@ -165,8 +169,6 @@ int main(int argc, char *argv[])
             printf("pthread_create() failed : %s\n", strerror(status));
             exit(-1);
         }
-
-
     }
 
 
@@ -174,9 +176,12 @@ int main(int argc, char *argv[])
     // JOIN SIGNAL THREAD
     joinThread(tid_sig_handler, &tret);
     printf("Main TID %lu\t: joined signal thread\n", (unsigned long)pthread_self());
+    joinThread(tid, &tret);
+    printf("Main TID %lu\t: joined client thread\n", (unsigned long)pthread_self());
 
-    if (cookie_bio) BIO_free(cookie_bio);
+
     if(ssl) SSL_free(ssl);
+    //if (cookie_bio) BIO_free(cookie_bio); // freed in client thread during cleanup
     if (ctx) SSL_CTX_free(ctx);
     if (sd) close(sd);
     return 0;

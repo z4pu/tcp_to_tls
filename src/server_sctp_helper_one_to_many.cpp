@@ -7,6 +7,7 @@ extern "C" {
     #include <sys/socket.h>
     #include <netdb.h>
     #include <netinet/in.h>
+    #include <netinet/sctp.h>
     #include <sys/un.h>
     #include <arpa/inet.h>
 }
@@ -28,8 +29,9 @@ extern "C" {
 
 int SCTPListenOneToMany(const int& port, const int& backlog)
 {
-	int sd, reuseaddr, status;
+	int sd, reuseaddr, status, r;
 	struct addrinfo hints, * ai, * aptr;
+    struct sctp_event_subscribe evnts;
 	char port_str[6] = {0};
     //struct timeval tv;
     //tv.tv_sec = TIMEOUT_IN_SECS;
@@ -49,6 +51,8 @@ int SCTPListenOneToMany(const int& port, const int& backlog)
 
 	/* Initialise Hints - Address struct*/
 	memset(&hints, 0, sizeof(hints));
+    memset(&evnts, 0, sizeof(evnts));
+    evnts.sctp_data_io_event = 1;
 	hints.ai_flags = AI_PASSIVE ; /* passive open */
 	hints.ai_family = AF_UNSPEC ; /* IPv4 or IPv6 */
 	hints.ai_socktype = SOCK_SEQPACKET ; /* TCP - Socket */
@@ -65,8 +69,18 @@ int SCTPListenOneToMany(const int& port, const int& backlog)
 
 				/* To avoid "address already in use" Error */
 				reuseaddr = 1;
-				setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(int));
-
+				r = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(int));
+                if (r == -1) {
+                    close(sd);
+                    perror("SCTPListenOneToMany(): setsockopt(SO_REUSEADDR)");
+                    continue;
+                }
+                r = setsockopt(sd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts));
+                if (r == -1) {
+                    close(sd);
+                    perror("SCTPListenOneToMany(): setsockopt(SCTP_EVENTS)");
+                    continue;
+                }
                 // Add timeout value
                 //setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
@@ -116,6 +130,7 @@ void ProcessSCTPClientWithServerSocket (const int& server_sd)
     char host[NI_MAXHOST], service[NI_MAXSERV];
 
     peer_addr_len = sizeof(struct sockaddr_storage);
+
 
     r = recvfrom(server_sd, buff, MAX_STRING_LENGTH, 0,
                 (struct sockaddr *) &peer_addr, &peer_addr_len);

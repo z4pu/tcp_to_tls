@@ -54,11 +54,12 @@ void * SCTPTLSOneToOneClientThread(void* args) {
 		inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
  	 	client_port = ntohs(sa.sin_port);
 
-		std::cout << "TID " << (unsigned long)pthread_self() << " Client connected from " << str << " and port " << client_port <<  std::endl;
+		std::cout << std::endl << "TID " << (unsigned long)pthread_self() << " Client connected from " << str << " and port " << client_port ;
 
 		HandleTLSClientInThread (client_sd, ctx);
 
 		close(client_sd);
+        std::cout << "TID " << (unsigned long)pthread_self() << " Client from " << str << " and port " << client_port << " is done!"<< std::endl;
 	}
 
 	printf("CLIENT TID %lu\t: Something funny happened, we should not be here\n", (unsigned long)pthread_self());

@@ -27,6 +27,7 @@ extern "C" {
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <arpa/inet.h>
+    #include <netinet/sctp.h>
 }
 
 extern "C" {
@@ -44,7 +45,7 @@ pthread_mutex_t ssl_lock;
 pthread_mutex_t *crypto_mutexes = NULL;
 BIO *bio_err;
 
-
+bool server_on;
 int Usage(int err, char *argv[]);
 
 
@@ -59,11 +60,14 @@ int main(int argc, char *argv[])
     void * tret;
     struct sockaddr_in client_addr;
     struct sockaddr_in server_addr;
-    memset(&args, 0, sizeof(struct dtls_client_thread_args));
+    memset(&args, 0, sizeof(struct sctp_one_to_many_client_thread_args));
     pthread_t tid = {};
     SSL *ssl = nullptr;
     BIO * dgramBio;
     struct timeval timeout;
+    server_on = true;
+    struct sctp_status sctp_stat;
+    socklen_t sctp_status_size = sizeof(sctp_stat);
 
     // As of version 1.1.0 OpenSSL will automatically allocate all
     // resources that it needs so no explicit initialisation is required.
@@ -90,6 +94,7 @@ int main(int argc, char *argv[])
     std::cout << "Generated " << ck_secrets_generate(CK_SECRET_MAX) << " cookie-secrets for DTLS\n";
 
     sd = SCTPListenOneToMany(server_port, NUM_CLIENTS);
+    std::cout << "Server sd: " << sd << std::endl;
     if (sd == -1) return -1;
 
     memset(&server_addr, 0, sizeof(struct sockaddr_in));
@@ -116,9 +121,9 @@ int main(int argc, char *argv[])
     printf("TID %lu\t: Created Signal Thread ID %lu\n",
     	(unsigned long)pthread_self(), (unsigned long)tid_sig_handler);
 
-    while (1) { // Set up BIOs and SSL for cookie exchange
+    while (server_on) { // Set up BIOs and SSL for cookie exchange
         memset(&client_addr, 0, sizeof(struct sockaddr_in));
-
+        memset(&sctp_stat, 0, sizeof(struct sctp_status));
 
 		/* Create BIO */
         mutexLock(&sd_mutex);
@@ -144,16 +149,13 @@ int main(int argc, char *argv[])
         }
         mutexUnlock(&ctx_lock);
 
-        mutexLock(&ssl_lock);
 		SSL_set_bio(ssl, dgramBio, dgramBio);
 		SSL_set_options(ssl, SSL_OP_COOKIE_EXCHANGE);
         do {
             r = DTLSv1_listen(ssl, (BIO_ADDR *) &client_addr);
-        }    while (!r);
-        mutexUnlock(&ssl_lock);
-        if (r < 0) {
+        }    while (!r && server_on);
+        if (r < 0 || !server_on) {
             OSSLErrorHandler("main(): DTLSv1_listen(): ");
-            SSL_free(ssl);
             goto end;
         }
 
@@ -161,18 +163,26 @@ int main(int argc, char *argv[])
         std::cout<< std::endl <<"Cookie exchange with " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << " OK!"<<  std::endl;
         #endif
 
-        memcpy(&args.server_addr, &server_addr, sizeof(struct sockaddr_in));
+        r = getsockopt(sd, IPPROTO_SCTP, SCTP_STATUS,
+                 &sctp_stat, &sctp_status_size);
+    	if (r < 0) {
+    		perror("SCTPTLSOneToManyClientThread(): getsockopt(SCTP_STATUS)");
+    		goto end;
+    	}
+
+
         memcpy(&args.client_addr, &client_addr, sizeof(struct sockaddr_in));
+        memcpy(&args.sstat_primary, &sctp_stat.sstat_primary, sizeof(struct sctp_paddrinfo));
         args.ssl = ssl;
         args.ctx = ctx;
-
+        args.server_sd = sd;
+        args.sstat_assoc_id = sctp_stat.sstat_assoc_id;
 
         status = pthread_create(&tid, NULL, SCTPTLSOneToManyClientThread, (void *)&args);
         if (status != 0)    {
             printf("pthread_create() failed : %s\n", strerror(status));
-            exit(-1);
+            goto end;
         }
-
 
     }
 
@@ -182,8 +192,6 @@ int main(int argc, char *argv[])
     joinThread(tid_sig_handler, &tret);
     printf("Main TID %lu\t: joined signal thread\n", (unsigned long)pthread_self());
 
-    if (dgramBio) BIO_free(dgramBio);
-    if(ssl) SSL_free(ssl);
     if (ctx) SSL_CTX_free(ctx);
     if (sd) close(sd);
     return 0;

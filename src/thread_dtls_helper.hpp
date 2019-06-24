@@ -19,6 +19,7 @@ extern "C" {
 #define PEER_RECV_TIMEOUT_SEC 0
 
 extern pthread_mutex_t ssl_lock;
+extern bool server_on;
 
 
 void * DTLSSignalHandler(void * arg);

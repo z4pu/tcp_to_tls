@@ -18,20 +18,17 @@ extern "C" {
 
 
 void * SCTPClientOneToManyThread(void* args) {
-    printf("CLIENT TID %lu\n", (unsigned long)pthread_self());
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
 
     udp_client_thread_args *thrd_args = (udp_client_thread_args *)args;
 
     int server_sd = thrd_args->server_sd;
+    std::cout << std::endl << "CLIENT TID " << (unsigned long)pthread_self() << std::endl;
 
     for (;;)	{
-        pthread_mutex_lock (&sd_mutex);
         ProcessSCTPClientWithServerSocket (server_sd);
         std::cout << "Ending for() loop for ";
         printf("CLIENT TID %lu\n", (unsigned long)pthread_self());
-        pthread_mutex_unlock(&sd_mutex);
-
     }
 
     printf("CLIENT TID %lu\t: Something funny happened, we should not be here\n", (unsigned long)pthread_self());

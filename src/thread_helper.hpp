@@ -11,6 +11,7 @@ extern "C" {
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <arpa/inet.h>
+    #include <netinet/sctp.h>
 }
 
 struct tcp_client_thread_args{
@@ -36,10 +37,12 @@ struct dtls_client_thread_args{
 };
 
 struct sctp_one_to_many_client_thread_args{
-  SSL * ssl;
-  SSL_CTX * ctx;
-  struct sockaddr_in client_addr;
-  struct sockaddr_in server_addr;
+    int server_sd;
+    SSL_CTX * ctx;
+    SSL * ssl;
+    struct sockaddr_in client_addr;
+    struct sctp_paddrinfo sstat_primary;
+    sctp_assoc_t sstat_assoc_id;
 };
 
 

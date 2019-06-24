@@ -10,6 +10,11 @@ Simple toy client and server programs to show how OpenSSL can be used to secure 
 -   with SCTP and TLS (using connected client socket)
 -   with SCTP and TLS (using the original server socket)
 
+Multi-threaded versions of all of the server programs except `server_sctp_one_to_many_tls_thread` are working.
+
+server_tls_thread, serve_tcp_thread, server_udp_thread create a pool of worker threads to serve client requests.
+
+server_dtls_thread creates a new thread for each incoming client, and exits the thread when the work is done.
 ## Installation requirements
 
 On Ubuntu, use the following command line to install cmake
@@ -63,7 +68,7 @@ Running `make` builds executables in the `bin` folder:
 | client_tls  | As with client_tcp, but over a TLS connection  |
 | server_udp<br>server_udp_thread  | As with server_tcp, but using UDP  |
 | client_udp  | As with client_tcp, but using UDP  |
-| server_dtls  | As with server_udp, but over DTLS |
+| server_dtls<br>server_dtls_thread  | As with server_udp, but over DTLS |
 | client_dtls  | As with client_udp, but over DTLS  |
 | server_sctp_one_to_one<br>server_sctp_one_to_one_thread  | As with server_tcp, but using SCTP one-to-one sockets. The function calls are similar to those for server_tcp  |
 | client_sctp_one_to_one  | As with client_tcp, but using SCTP one-to-one sockets. The function calls are similar to those for client_tcp  |

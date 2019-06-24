@@ -307,20 +307,21 @@ int VerifyCookie( SSL *ssl, const unsigned char *cookie,
 
   buff = (char*)OPENSSL_malloc(length);
 
-  if (buff == NULL)
-  {
+  if (buff == NULL)  {
       BIO_printf(bio_err, "out of memory\n");
       return 0;
   }
 
   memcpy(buff, &peer.s4.sin_port, sizeof(peer.s4.sin_port));
   memcpy(buff + sizeof(peer.s4.sin_port), &peer.s4.sin_addr,
-                            sizeof(struct in_addr));
+            sizeof(struct in_addr));
 
   /* Tests whether cookie matches one of our secrets */
   if(ck_secrets_exist((unsigned char *)buff, length,
-                      const_cast<unsigned char *>(cookie), cookie_len) == 1 )
-    {return 1;}
-
+        const_cast<unsigned char *>(cookie), cookie_len) == 1 )  {
+        OPENSSL_free(buff);
+        return 1;
+    }
+    OPENSSL_free(buff);
     return 0;
 }

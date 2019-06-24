@@ -29,6 +29,7 @@ void * DTLSSignalHandler(void * arg)
   (void)arg;
     sigset_t mask;
     int sig;
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
     //struct itimerval timer_ping;
 	printf("Signal TID %lu\n", (unsigned long)pthread_self());
 
@@ -40,9 +41,9 @@ void * DTLSSignalHandler(void * arg)
             case SIGTERM:
             case SIGINT:
             case SIGQUIT:
-                printf("\nReceived signal %d, exiting...\n", sig);
-								printf("Signal TID %lu\t: ending\n", (unsigned long)pthread_self());
-                exit(0);
+                printf("\nReceived signal %d, exiting Signal TID %lu...\n", sig, (unsigned long)pthread_self());
+                server_on = false;
+                return ((void*)NULL);
 			default:
                 break;
         }
@@ -52,6 +53,7 @@ void * DTLSSignalHandler(void * arg)
 
 
 void * DTLSClientThread(void * args) {
+    if (!server_on) return ((void*)NULL);
     printf("\nCLIENT TID %lu\n", (unsigned long)pthread_self());
 
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
@@ -107,11 +109,10 @@ void * DTLSClientThread(void * args) {
 
 	/* Finish handshake */
 	do { r = SSL_accept(ssl); }
-	while (r == 0);
-	if (r < 0) {
+	while (r == 0 && server_on);
+	if (r < 0 || (!server_on)) {
         OSSLErrorHandler("DTLSClientThread(): SSL_accept");
 		goto cleanup;
-
 	}
 
 	/* Set and activate timeouts */
@@ -119,6 +120,7 @@ void * DTLSClientThread(void * args) {
 	timeout.tv_usec = 0;
 	long_r = BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
     std::cout << "BIO_CTRL_DGRAM_SET_RECV_TIMEOUT returned " << long_r << std::endl;
+
 
     r = ReceiveMessageTLS(ssl, buff);
     if (r == -1) {
@@ -150,6 +152,7 @@ void * DTLSClientThread(void * args) {
 
     cleanup:
         if (client_fd)close(client_fd);
+        if (SSL_get_rbio(ssl)) BIO_free(SSL_get_rbio(ssl));
         printf("Thread %lu done, connection closed.\n", (long) pthread_self());
     return ((void*)NULL);
 }

@@ -11,6 +11,7 @@ extern "C" {
     #include <netinet/in.h>
     #include <sys/un.h>
     #include <arpa/inet.h>
+    #include <unistd.h>
 }
 
 void *get_in_addr(struct sockaddr *sa) {
@@ -39,6 +40,7 @@ void ReverseString(char *s)
 {
 	int i, j;
 	char c;
+    sleep(10);
 	j = strlen(s);
 	for (i=0, j = strlen(s)-1; i<j; i++, j--)
 	{
