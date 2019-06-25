@@ -31,7 +31,7 @@ int SCTPListenOneToMany(const int& port, const int& backlog)
 {
 	int sd, reuseaddr, status, r;
 	struct addrinfo hints, * ai, * aptr;
-    struct sctp_event_subscribe evnts;
+
 	char port_str[6] = {0};
     //struct timeval tv;
     //tv.tv_sec = TIMEOUT_IN_SECS;
@@ -51,8 +51,8 @@ int SCTPListenOneToMany(const int& port, const int& backlog)
 
 	/* Initialise Hints - Address struct*/
 	memset(&hints, 0, sizeof(hints));
-    memset(&evnts, 0, sizeof(evnts));
-    evnts.sctp_data_io_event = 1;
+
+
 	hints.ai_flags = AI_PASSIVE ; /* passive open */
 	hints.ai_family = AF_UNSPEC ; /* IPv4 or IPv6 */
 	hints.ai_socktype = SOCK_SEQPACKET ; /* TCP - Socket */
@@ -75,10 +75,10 @@ int SCTPListenOneToMany(const int& port, const int& backlog)
                     perror("SCTPListenOneToMany(): setsockopt(SO_REUSEADDR)");
                     continue;
                 }
-                r = setsockopt(sd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts));
-                if (r == -1) {
+                r = enable_notifications(sd);
+                if (r != 0) {
                     close(sd);
-                    perror("SCTPListenOneToMany(): setsockopt(SCTP_EVENTS)");
+                    perror("SCTPListenOneToMany(): enable_notifications()");
                     continue;
                 }
                 // Add timeout value
@@ -126,14 +126,14 @@ void ProcessSCTPClientWithServerSocket (const int& server_sd)
     socklen_t peer_addr_len;
     struct sockaddr_storage peer_addr;
     int r, s, c = 0;
-    unsigned char buff[MAX_STRING_LENGTH+1] = {};
+    char buff[MAX_STRING_LENGTH+1] = {};
     char host[NI_MAXHOST], service[NI_MAXSERV];
 
     peer_addr_len = sizeof(struct sockaddr_storage);
 
 
-    r = recvfrom(server_sd, buff, MAX_STRING_LENGTH, 0,
-                (struct sockaddr *) &peer_addr, &peer_addr_len);
+    r = RecvSCTPOneToManyMessage(
+        server_sd, (struct sockaddr_in *) &peer_addr, buff);
     if (r == -1)   {
         perror("ProcessSCTPClientWithServerSocket(): recvfrom()");
         return;
@@ -153,8 +153,8 @@ void ProcessSCTPClientWithServerSocket (const int& server_sd)
 
     ReverseString(reinterpret_cast<char*>(buff));
 
-    c = sendto(server_sd, buff, r, 0,  (struct sockaddr *) &peer_addr,
-            peer_addr_len);
+    c = SendSCTPOneToManyMessage(server_sd, (struct sockaddr_in *) &peer_addr,
+            buff);
     if (c != r) {
         perror("ProcessSCTPClientWithServerSocket(): sendto(): Error sending response");
     }

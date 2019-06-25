@@ -290,6 +290,7 @@ add_executable(server_sctp_one_to_many
     server_sctp_one_to_many.cpp
     server_sctp_helper_one_to_many.cpp
     common.cpp
+    common_sctp.cpp
 )
 target_link_libraries(server_sctp_one_to_many
     sctp

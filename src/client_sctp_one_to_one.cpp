@@ -44,14 +44,14 @@ int main(int argc, char *argv[]){
             }
 
             // Send data
-            r = SendSCTP(sd, argv[6]);
+            r = SendSCTPOneToOne(sd, argv[6]);
             if (r == -1) {
-              perror("main(): SendSCTP()");
+              perror("main(): SendSCTPOneToOne()");
               close(sd);
               return 0;
             }
 
-            r = RecvSCTP(sd, received_string);
+            r = RecvSCTPOneToOne(sd, received_string);
             if (r == -1) {
               perror("main(): ReceiveMessage()");
               close(sd);

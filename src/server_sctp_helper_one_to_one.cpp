@@ -111,7 +111,7 @@ void ProcessSCTPClientWithClientSocket (const int& client_socket) {
     unsigned char buff[MAX_STRING_LENGTH+1] = {};
     //std::string instring, outstring;
 
-    r = RecvSCTP(client_socket, buff);
+    r = RecvSCTPOneToOne(client_socket, buff);
     if (r == -1) {
         perror("ProcessSCTPClientWithClientSocket(): recv()");
         return;
@@ -119,7 +119,7 @@ void ProcessSCTPClientWithClientSocket (const int& client_socket) {
 
     ReverseString(reinterpret_cast<char*>(buff));
 
-    r = SendSCTP(client_socket, reinterpret_cast<char*>(buff));
+    r = SendSCTPOneToOne(client_socket, reinterpret_cast<char*>(buff));
     if (r == -1) {
         perror("ProcessSCTPClientWithClientSocket(): send(reversed string)");
         return;

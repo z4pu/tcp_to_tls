@@ -97,6 +97,8 @@ int main(int argc, char *argv[])
     std::cout << "Server sd: " << sd << std::endl;
     if (sd == -1) return -1;
 
+    // Subscribe to SCTP notifications to track association ids
+
     memset(&server_addr, 0, sizeof(struct sockaddr_in));
     BuildAddress(server_addr, server_port, "0.0.0.0");
 

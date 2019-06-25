@@ -313,61 +313,26 @@ Unix Network Programming (volume 1, 3rd ed.) by W. Richard Stevens, et al., has 
 
 Jan Newmarch is Honorary Senior Research Fellow at Monash University. He has been using Linux since kernel 0.98. He has written four books and many papers and also has given courses on many technical topics, concentrating on network programming for the last six years. His Web site is jan.newmarch.name.
 
-TS-4900 SPECS
+# One-to-one vs one-to-many
+
+<https://docs.oracle.com/cd/E19253-01/816-5177/6mbbc4gam/index.html>
 
 
+One-to-one style socket interface supports similar semantics as sockets for connection oriented protocols, such as TCP.
+Thus, a passive socket is created by calling the listen(3SOCKET) function after binding the socket using bind().
+Associations to this passive socket can be received using accept(3SOCKET) function.
+Active sockets use the connect(3SOCKET) function after binding to initiate an association. If an active socket is not explicitly bound, an implicit binding is performed.
+If an application wants to exchange data during the association setup phase, it should not call connect(), but use sendto(3SOCKET)/sendmsg(3SOCKET) to implicitly initiate an association. Once an association has been established, read(2) and write(2) can used to exchange data. Additionally, send(3SOCKET), recv(3SOCKET), sendto(), recvfrom(3SOCKET), sendmsg(), and recvmsg(3SOCKET) can be used.
 
+One-to-many socket interface supports similar semantics as sockets for connection less protocols, such as UDP (however, unlike UDP, it does not support broadcast or multicast communications).
 
-You May Like
-last will and testament
-Digital Will, Part I: Requirements
-Kyle Rankin
-DIY Internet Radio Receiver
-Build Your Own Internet Radio Receiver
-Nick Tufillaro
-Testing Models
-Reuven M. Lerner
-Is the Moon Waxing or Waning?
-Dave Taylor
-Linux Journal Week in Review
+A passive socket is created using the listen() function after binding the socket using bind().
+An accept() call is not needed to receive associations to this passive socket (in fact, an accept() on a one-to-many socket will fail).
+Associations are accepted automatically and notifications of new associations are delivered in recvmsg() provided notifications are enabled.
+Active sockets after binding (implicitly or explicitly) need not call connect() to establish an association, implicit associations can be created using sendmsg()/recvmsg() or sendto()/recvfrom() calls.
+Such implicit associations cannot be created using send() and recv() calls. On an SCTP socket (one-to-one or one-to-many), an association may be established using sendmsg(). However, if an association already exists for the destination address specified in the msg_name member of the msg parameter, sendmsg() must include the association id in msg_iov member of the msg parameter (using sctp_sndrcvinfo structure) for a one-to-many SCTP socket. If the association id is not provided, sendmsg() fails with EADDRINUSE. On a one-to-one socket the destination information in the msg parameter is ignored for an established association.
 
-Sign up to get all the good stuff delivered to your inbox every week.
-I give my consent to be emailed
-The Value of Open Source Journalism
+# SCTP notifications
+https://petanode.com/blog/posts/sctp-notifications-in-linux.html
 
-Subscribe and support our coverage for technology's biggest thinkers – with up to 52% savings.
-Subscribe
-Connect With Us
-
-Linux Journal, currently celebrating its 25th year of publication, is the original magazine of the global Open Source community.
-© 2019 Linux Journal, LLC. All rights reserved.
-Footer Submenu
-
-    Privacy Policy
-    Terms of Service
-    Advertise
-
-Footer Menu Column 1
-
-    Subscribe
-    Renew
-    Backissues
-    Customer Service
-
-Footer Menu Column 2
-
-    Masthead
-    FAQ
-    Authors
-    Letters to Editor
-
-Footer Menu Column 3
-
-    RSS Feeds
-    Newsletters
-    Merchandise
-    Contact Us
-
-Powered by
-
-Powered by Private Internet Access
+Each SCTP notification that you want to receive should be explicitly enabled with socket option. There are two ways to do that but more on this in the next section. When SCTP event occurs (and you are subscribed for it) it will be delivered with recvmsg(). The MSG_NOTIFICATION flag will be set in struct msghdr's msg_flags field. As for payload data you can check if the whole notification is delivered by checking if MSG_EOR flag is set. recvmsg() will always deliver only one notification per call.

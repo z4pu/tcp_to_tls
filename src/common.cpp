@@ -40,7 +40,7 @@ void ReverseString(char *s)
 {
 	int i, j;
 	char c;
-    sleep(10);
+    sleep(TIMEOUT_IN_SECS);
 	j = strlen(s);
 	for (i=0, j = strlen(s)-1; i<j; i++, j--)
 	{
