@@ -132,23 +132,26 @@ int SendSCTPOneToManyMessage(int server_fd, struct sockaddr_in* dest_addr, char 
 }
 
 // Source: https://github.com/tdimitrov/sctp-sandbox/blob/one-to-many_noitf/common.h
+// https://petanode.com/blog/posts/sctp-notifications-in-linux.html
 int enable_notifications(int fd)
 {
     struct sctp_event_subscribe events_subscr;
     memset(&events_subscr, 0, sizeof(events_subscr));
+    int r = 0;
 
     events_subscr.sctp_association_event = 1;
     events_subscr.sctp_shutdown_event = 1;
 
-    return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS, &events_subscr, sizeof(events_subscr));
+    r = setsockopt (fd, SOL_SCTP, SCTP_EVENTS, &events_subscr, sizeof(events_subscr));
+    if (r == -1) {
+        perror("enable_notifications(): setsockopt()");
+        return -1;
+    }
+    return r;
 }
 
+// Source: https://github.com/tdimitrov/sctp-sandbox/blob/one-to-many_noitf/common.h
 // https://petanode.com/blog/posts/sctp-notifications-in-linux.html
-// Notice that I check if the MSG_NOTIFICATION flag is set and if MSG_EOR is cleared and only then call handle_notification() which reads the notification. This check is only to demonstrate how MSG_EOR works and is not sufficient for production code. The correct behavior is to save the partially read notification in another buffer and to call recvmsg() again until MSG_EOR is set.
-
-// There is also one side effect. If the buffer is not big enough you will retrieve the notification via two or more recvmsg() calls and you will see two or more warnings. However the last recvmsg() call will have the MSG_EOR flag set and handle notification will be called for the last part of the notification. In this case sn_type will be set to zero and you will get another warning about unhandled notification type. I know this is lame, but again - I want to focus on SCTP protocol right now. The proper C programming part is from you.
-//
-// Keep this things in mind when you write your code, because this implementation here is not good enough for production systems.
 int handle_notification(union sctp_notification *notif, size_t notif_len)
 {
     // http://stackoverflow.com/questions/20679070/how-does-one-determine-the-size-of-an-unnamed-struct
@@ -222,14 +225,17 @@ int handle_notification(union sctp_notification *notif, size_t notif_len)
 }
 
 // Source: https://www.linuxjournal.com/article/9784
-int get_associd(int sockfd, struct sockaddr *sa, socklen_t salen) {
+int GetSCTPAssociationID(int sockfd, struct sockaddr *sa, socklen_t salen) {
     struct sctp_paddrinfo sp;
-    int sz;
+    int sz, r;
 
     sz = sizeof(struct sctp_paddrinfo);
     bzero(&sp, sz);
     memcpy(&sp.spinfo_address, sa, salen);
-    if (sctp_opt_info(sockfd, 0, SCTP_GET_PEER_ADDR_INFO, &sp, (socklen_t*)&sz) == -1)
-        perror("get assoc");
+    r = sctp_opt_info(sockfd, 0, SCTP_GET_PEER_ADDR_INFO, &sp, (socklen_t*)&sz);
+    if (r == -1) {
+        perror("GetSCTPAssociationID(): sctp_opt_info");
+        return -1;
+    }
     return (sp.spinfo_assoc_id);
 }

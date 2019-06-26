@@ -3,6 +3,7 @@
 #include "client_sctp_helper_one_to_many.hpp"
 #include "client_sctp_helper_one_to_many_tls.hpp"
 #include "common_tls.hpp"
+#include "common_sctp.hpp"
 #include "client_dtls_helper.hpp"
 #include "client_tls_helper.hpp"
 
@@ -31,7 +32,7 @@ int Usage(char *argv[]);
 
 
 int main(int argc, char *argv[]){
-    int srv_port, sd, r, err = 0;
+    int srv_port, sd, r, err, assoc_id = 0;
     unsigned char received_string[MAX_STRING_LENGTH+1] = {};
     sockaddr_in peer_addr;
     memset(&peer_addr, 0, sizeof(sockaddr_in));
@@ -98,6 +99,13 @@ int main(int argc, char *argv[]){
                 return 0;
             }
             std::cout << "Handshake ok" << std::endl;
+            assoc_id = GetSCTPAssociationID(sd, (sockaddr *)&peer_addr, sizeof(sockaddr_in));
+            if (assoc_id == -1) {
+                perror("GetSCTPAssociationID(): ");
+                close(sd);
+                return 0;
+            }
+            std::cout << "SCTP association ID: " << assoc_id << std::endl;
 
             r = SendRequestTLS(ssl, argv[6]);
             if (r == -1) {

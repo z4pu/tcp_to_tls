@@ -24,43 +24,35 @@ void * SCTPTLSOneToManyClientThread(void* args) {
     printf("CLIENT TID %lu\n", (unsigned long)pthread_self());
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
 
-    struct sctp_paddrparams peer_params;
     struct sctp_one_to_many_client_thread_args *thrd_args = (struct sctp_one_to_many_client_thread_args *)args;
-    BIO * dgramBio;
-
-    sockaddr_in cookie_client_addr;
-    memset(&peer_params, 0, sizeof(struct sctp_paddrparams));
-    memset(&cookie_client_addr, 0, sizeof(struct sockaddr_in));
-
+    int peer_assoc_id, server_sd, r = 0;
+    sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(struct sockaddr_in));
+    unsigned char buff[MAX_STRING_LENGTH+1] = {};
 
 
     SSL * ssl = thrd_args->ssl;
-    int server_sd =  thrd_args->server_sd;
-    sctp_assoc_t  peer_assoc_id = thrd_args->peer_assoc_id;
-    memcpy(&cookie_client_addr, &thrd_args->client_addr, sizeof(sockaddr_in));
-
-    int r = 0;
-    unsigned char buff[MAX_STRING_LENGTH+1] = {};
+    server_sd =  thrd_args->server_sd;
+    peer_assoc_id = thrd_args->peer_assoc_id;
+    memcpy(&client_addr, &thrd_args->client_addr, sizeof(sockaddr_in));
 
     std::cout << "Server sd: " << server_sd << std::endl;
+    std::cout << "Association ID: " << peer_assoc_id << std::endl;
 
-    mutexLock(&sd_mutex);
-    dgramBio = BIO_new_dgram_sctp(server_sd, BIO_NOCLOSE);
-    mutexUnlock(&sd_mutex);
-    if (!dgramBio) {
-        OSSLErrorHandler("main(): BIO_new_dgram_sctp(): cannot create from fd");
-        goto cleanup;
-    }
-    SSL_set_bio(ssl, dgramBio, dgramBio);
-    SSL_set_accept_state(ssl);
 
     // waits for a TLS/SSL client to initiate the TLS/SSL handshake
+    rwlock_wrlock(&ssl_lock);
     r = SSL_accept(ssl);
+    rwlock_unlock(&ssl_lock);
     if (r <= 0) {
          SSLReadWriteErrorHandler(ssl, r);
          goto cleanup;
     }
+
+    std::cout << "SSL Handshake OK, returned " << r << std::endl;
+    rwlock_rdlock(&ssl_lock);
     r = ReceiveMessageTLS(ssl, buff);
+    rwlock_unlock(&ssl_lock);
     if (r == -1) {
         perror("ProcessTLSClient(): ReceiveMessageTLS()");
         SSL_shutdown(ssl);
@@ -69,14 +61,18 @@ void * SCTPTLSOneToManyClientThread(void* args) {
 
     ReverseString(reinterpret_cast<char*>(buff));
 
+    rwlock_wrlock(&ssl_lock);
     r = SendStringSizeTLS(ssl, reinterpret_cast<char*>(buff));
+    rwlock_unlock(&ssl_lock);
     if (r == -1) {
         perror("ProcessTLSClient(): SendStringSize(reversed string)");
         SSL_shutdown(ssl);
         goto cleanup;
     }
 
+    rwlock_wrlock(&ssl_lock);
     r = SendStringTLS(ssl, reinterpret_cast<char*>(buff));
+    rwlock_unlock(&ssl_lock);
     if (r == -1) {
         perror("ProcessTLSClient(): SendString(reversed string)");
         SSL_shutdown(ssl);
@@ -90,7 +86,6 @@ void * SCTPTLSOneToManyClientThread(void* args) {
     if (ssl) SSL_shutdown(ssl);
 
     cleanup:
-    if(SSL_get_rbio(ssl)) BIO_free(SSL_get_rbio(ssl));
     if(ssl) SSL_free(ssl);
     printf("Thread %lu done, connection closed.\n", (long) pthread_self());
     return ((void*)NULL);

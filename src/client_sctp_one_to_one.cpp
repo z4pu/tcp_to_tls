@@ -20,8 +20,10 @@ int Usage(char *argv[]);
 
 
 int main(int argc, char *argv[]){
-    int srv_port, sd, r = 0;
+    int srv_port, sd, r, assoc_id = 0;
     unsigned char received_string[MAX_STRING_LENGTH+1] = {};
+    sockaddr_in peer_addr;
+    memset(&peer_addr, 0, sizeof(sockaddr_in));
 
     if (argc!=7)  {
         Usage(&argv[0]);
@@ -38,10 +40,21 @@ int main(int argc, char *argv[]){
         else {
             srv_port = atoi(argv[4]);
 
+            BuildAddress(peer_addr, srv_port, argv[2]);
+
             if ((sd = SCTPConnectOneToOne(srv_port, argv[2])) < 0){
                 perror("main(): SCTPConnect()");
                 return 0;
             }
+
+            assoc_id = GetSCTPAssociationID(sd, (sockaddr *)&peer_addr, sizeof(sockaddr_in));
+            if (assoc_id == -1) {
+                perror("GetSCTPAssociationID(): ");
+                close(sd);
+                return 0;
+            }
+            std::cout << "SCTP association ID: " << assoc_id << std::endl;
+
 
             // Send data
             r = SendSCTPOneToOne(sd, argv[6]);

@@ -28,7 +28,7 @@ extern "C" {
 int SCTPConnectManyToOne(const int& port, const char * addr){
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
-    int rv;
+    int rv, r;
     char s[INET6_ADDRSTRLEN];
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -50,7 +50,12 @@ int SCTPConnectManyToOne(const int& port, const char * addr){
             perror("SCTPConnectManyToOne(): socket()");
             continue;
         }
-
+        r = enable_notifications(sockfd);
+        if (r != 0) {
+            close(sockfd);
+            perror("SCTPConnectManyToOne(): enable_notifications()");
+            continue;
+        }
         break;
     }
 

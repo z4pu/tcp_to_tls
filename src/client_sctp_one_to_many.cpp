@@ -21,7 +21,7 @@ int Usage(char *argv[]);
 
 
 int main(int argc, char *argv[]){
-    int srv_port, sd, r = 0;
+    int srv_port, sd, r, assoc_id = 0;
     char received_string[MAX_STRING_LENGTH+1] = {};
     sockaddr_in peer_addr;
     memset(&peer_addr, 0, sizeof(sockaddr_in));
@@ -57,6 +57,13 @@ int main(int argc, char *argv[]){
             }
             std::cout << "Sent string: " << argv[6] << std::endl;
 
+            assoc_id = GetSCTPAssociationID(sd, (sockaddr *)&peer_addr, sizeof(sockaddr_in));
+            if (assoc_id == -1) {
+                perror("GetSCTPAssociationID(): ");
+                close(sd);
+                return 0;
+            }
+            std::cout << "SCTP association ID: " << assoc_id << std::endl;
 
             r = RecvSCTPOneToManyMessage(sd, &peer_addr,  received_string);
             if (r == -1) {

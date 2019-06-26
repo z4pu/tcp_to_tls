@@ -27,7 +27,7 @@ extern "C" {
 
 int SCTPListenOneToOne(const int& port, const int& backlog)
 {
-	int sd, reuseaddr, status;
+	int sd, reuseaddr, status, r;
 	struct addrinfo hints, * ai, * aptr;
 	char port_str[6] = {0};
     //struct timeval tv;

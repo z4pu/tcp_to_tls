@@ -2,6 +2,7 @@
 #include "server_tls_helper.hpp"
 #include "common_tls.hpp"
 #include "common.hpp"
+#include "common_sctp.hpp"
 
 extern "C" {
     #include <openssl/evp.h>
@@ -32,7 +33,7 @@ int Usage(int err, char *argv[]);
 int main(int argc, char *argv[])
 {
     int err = 0;
-    int sd, client_sd, server_port, r = 0;
+    int sd, client_sd, server_port, r, assoc_id = 0;
     socklen_t slen ;
 	sockaddr_in	sa;
     SSL *ssl;
@@ -86,8 +87,16 @@ int main(int argc, char *argv[])
             perror("accept() failed");
             return -1;
         }
-        std::cout << "--> accept(): OK from "
-        << inet_ntoa(sa.sin_addr)  << std::endl;
+        std::cout << "--> accept(): New FD " << client_sd <<  " created from "
+        << inet_ntoa(sa.sin_addr) << " at port " << ntohs(sa.sin_port) << std::endl;
+
+        assoc_id = GetSCTPAssociationID(client_sd, (sockaddr *)&sa, sizeof(sockaddr_in));
+        if (assoc_id == -1) {
+            perror("GetSCTPAssociationID(): ");
+            close(sd);
+            return 0;
+        }
+        std::cout << "SCTP association ID: " << assoc_id << std::endl;
 
         ssl = SSL_new(ctx);
     	if (ssl == NULL){

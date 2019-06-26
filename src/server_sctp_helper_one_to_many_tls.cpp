@@ -31,6 +31,8 @@ void ProcessSCTPTLSClientWithServerSocket (const int& server_sd, SSL_CTX* const 
     unsigned char buff[MAX_STRING_LENGTH+1] = {};
     SSL * ssl = nullptr;
     BIO * dgramBio = nullptr;
+    socklen_t salen = sizeof(struct sockaddr);
+    int assoc_id = 0;
 
 
     BIO_ADDR* client_addr_bio = BIO_ADDR_new();
@@ -39,9 +41,9 @@ void ProcessSCTPTLSClientWithServerSocket (const int& server_sd, SSL_CTX* const 
         return;
     }
 
-    dgramBio = BIO_new_dgram_sctp(server_sd, BIO_NOCLOSE);
+    dgramBio = BIO_new_dgram(server_sd, BIO_NOCLOSE);
     if (!dgramBio) {
-        OSSLErrorHandler("ProcessSCTPTLSClientWithServerSocket(): BIO_new_dgram_sctp(): cannot create from fd");
+        OSSLErrorHandler("ProcessSCTPTLSClientWithServerSocket(): BIO_new_dgram(): cannot create from fd");
         BIO_ADDR_free(client_addr_bio);
         return;
     }
@@ -78,8 +80,16 @@ void ProcessSCTPTLSClientWithServerSocket (const int& server_sd, SSL_CTX* const 
         BIO_ADDR_free(client_addr_bio);
         return;
     }
+    assoc_id = GetSCTPAssociationID(server_sd, (sockaddr *)client_addr_bio, salen);
+    if (assoc_id == -1) {
+        OSSLErrorHandler("ProcessSCTPTLSClientWithServerSocket(): GetSCTPAssociationID(): ");
+        SSL_free(ssl);
+        BIO_ADDR_free(client_addr_bio);
+        return;
+    }
     #ifdef DEBUG
     std::cout << "Cookie exchange OK, DTLSv1_listen() returned " << cookie_r << std::endl;
+    std::cout << "SCTP association ID: " << assoc_id << std::endl;
     #endif
 
     // We don't need to do the following because SCTP is a connect-based protocol

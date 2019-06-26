@@ -18,7 +18,7 @@ extern "C" {
 #define PEER_RECV_TIMEMOUT_USEC 250000
 #define PEER_RECV_TIMEOUT_SEC 0
 
-extern pthread_mutex_t ssl_lock;
+extern pthread_rwlock_t ssl_lock;
 extern bool server_on;
 
 

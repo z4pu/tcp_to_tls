@@ -18,6 +18,6 @@ int RecvSCTPOneToManyMessage(
     int server_fd, struct sockaddr_in* sender_addr, char * inbuff);
 int SendSCTPOneToManyMessage(
     int server_fd, struct sockaddr_in* dest_addr, char * outbuff);
-int get_associd(int sockfd, struct sockaddr *sa, socklen_t salen);
+int GetSCTPAssociationID(int sockfd, struct sockaddr *sa, socklen_t salen);
 
 #endif /* COMMON_SCTP_HPP */

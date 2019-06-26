@@ -3,7 +3,8 @@
 
 #include <pthread.h>
 
-extern pthread_mutex_t ssl_lock;
+extern pthread_rwlock_t ssl_lock;
+extern bool server_on;
 
 void * SCTPTLSOneToManyClientThread(void* args);
 

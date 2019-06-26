@@ -1,5 +1,6 @@
 #include "server_sctp_helper_one_to_one.hpp"
 #include "common.hpp"
+#include "common_sctp.hpp"
 
 
 #include <cstring>
@@ -23,7 +24,7 @@ int Usage(int err, char *argv[]);
 int main(int argc, char *argv[])
 {
     int err = 0;
-    int sd, client_sd, server_port = 0;
+    int sd, client_sd, server_port, assoc_id = 0;
     socklen_t slen ;
 	sockaddr_in	sa;
 
@@ -54,8 +55,16 @@ int main(int argc, char *argv[])
             perror("accept() failed");
             return -1;
         }
-        std::cout << "--> accept(): OK from "
-        << inet_ntoa(sa.sin_addr)  << std::endl;
+        std::cout << "--> accept(): New FD " << client_sd <<  " created from "
+        << inet_ntoa(sa.sin_addr) << " at port " << ntohs(sa.sin_port) << std::endl;
+
+        assoc_id = GetSCTPAssociationID(client_sd, (sockaddr *)&sa, sizeof(sockaddr_in));
+        if (assoc_id == -1) {
+            perror("GetSCTPAssociationID(): ");
+            return -1;
+        }
+        std::cout << "SCTP association ID: " << assoc_id << std::endl;
+
         ProcessSCTPClientWithClientSocket (client_sd);
         close(client_sd);
     }

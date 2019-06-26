@@ -108,7 +108,9 @@ void * DTLSClientThread(void * args) {
     std::cout << "BIO_CTRL_DGRAM_SET_CONNECTED returned " << long_r << std::endl;
 
 	/* Finish handshake */
-	do { r = SSL_accept(ssl); }
+	do {
+        r = SSL_accept(ssl);
+    }
 	while (r == 0 && server_on);
 	if (r < 0 || (!server_on)) {
         OSSLErrorHandler("DTLSClientThread(): SSL_accept");
@@ -120,7 +122,6 @@ void * DTLSClientThread(void * args) {
 	timeout.tv_usec = 0;
 	long_r = BIO_ctrl(SSL_get_rbio(ssl), BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
     std::cout << "BIO_CTRL_DGRAM_SET_RECV_TIMEOUT returned " << long_r << std::endl;
-
 
     r = ReceiveMessageTLS(ssl, buff);
     if (r == -1) {

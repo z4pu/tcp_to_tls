@@ -41,7 +41,7 @@ extern "C" {
 
 pthread_mutex_t sd_mutex;
 pthread_mutex_t ctx_lock;
-pthread_mutex_t ssl_lock;
+pthread_rwlock_t ssl_lock;
 pthread_mutex_t *crypto_mutexes = NULL;
 
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
     mutexInit(&sd_mutex, NULL);
     mutexInit(&ctx_lock, NULL);
-    mutexInit(&ssl_lock, NULL);
+    rwlock_init(&ssl_lock);
 
 
     /* Signalmask initialise */
@@ -127,35 +127,28 @@ int main(int argc, char *argv[])
         memset(&tid, 0, sizeof(pthread_t));
 
 		/* Create BIO */
-        mutexLock(&sd_mutex);
 		cookie_bio = BIO_new_dgram(sd, BIO_NOCLOSE);
         if (!cookie_bio) {
             OSSLErrorHandler("main(): BIO_new_dgram(): cannot create from fd");
-            mutexUnlock(&sd_mutex);
             goto end;
         }
-        mutexUnlock(&sd_mutex);
 
 		/* Set and activate timeouts */
 		timeout.tv_sec = TIMEOUT_IN_SECS;
 		timeout.tv_usec = 0;
 		BIO_ctrl(cookie_bio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 
-        mutexLock(&ctx_lock);
+
 		ssl = SSL_new(ctx);
         if (ssl == NULL){
             OSSLErrorHandler("main(): SSL_new(): ");
-            mutexUnlock(&ctx_lock);
             goto end;
         }
-        mutexUnlock(&ctx_lock);
 
-        mutexLock(&ssl_lock);
 		SSL_set_bio(ssl, cookie_bio, cookie_bio);
 		SSL_set_options(ssl, SSL_OP_COOKIE_EXCHANGE);
 		while (DTLSv1_listen(ssl, (BIO_ADDR *) &client_addr) <= 0 && server_on);
         if (!server_on) break;
-        mutexUnlock(&ssl_lock);
 
         std::cout<< std::endl <<"Cookie exchange with " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << " OK!"<<  std::endl;
 
@@ -179,9 +172,9 @@ int main(int argc, char *argv[])
     joinThread(tid, &tret);
     printf("Main TID %lu\t: joined client thread\n", (unsigned long)pthread_self());
 
-
+    rwlock_wrlock(&ssl_lock);
     if(ssl) SSL_free(ssl);
-    //if (cookie_bio) BIO_free(cookie_bio); // freed in client thread during cleanup
+    rwlock_unlock(&ssl_lock);
     if (ctx) SSL_CTX_free(ctx);
     if (sd) close(sd);
     return 0;

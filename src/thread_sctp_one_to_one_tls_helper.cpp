@@ -4,6 +4,7 @@
 #include "thread_tls_helper.hpp"
 #include "server_tcp_helper.hpp"
 #include "server_sctp_helper_one_to_one.hpp"
+#include "common_sctp.hpp"
 
 extern "C" {
     #include "pthread_wrap.h"
@@ -24,7 +25,7 @@ void * SCTPTLSOneToOneClientThread(void* args) {
 	tls_client_thread_args *thrd_args = (tls_client_thread_args *)args;
 	socklen_t slen ;
 	sockaddr_in	sa;
-	int client_sd, client_port = 0;
+	int client_sd, client_port, assoc_id = 0;
 	char str[INET_ADDRSTRLEN];
     SSL_CTX* ctx = nullptr;
 
@@ -54,7 +55,16 @@ void * SCTPTLSOneToOneClientThread(void* args) {
 		inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
  	 	client_port = ntohs(sa.sin_port);
 
-		std::cout << std::endl << "TID " << (unsigned long)pthread_self() << " Client connected from " << str << " and port " << client_port ;
+		std::cout << std::endl << "TID " << (unsigned long)pthread_self() << " Client connected from " << str << " and port " << client_port << " on new FD " << client_sd << std::endl;
+
+
+        assoc_id = GetSCTPAssociationID(client_sd, (sockaddr *)&sa, sizeof(sockaddr_in));
+        if (assoc_id == -1) {
+            perror("GetSCTPAssociationID(): ");
+            close(client_sd);
+            return;
+        }
+        std::cout << "SCTP association ID: " << assoc_id << std::endl;
 
 		HandleTLSClientInThread (client_sd, ctx);
 

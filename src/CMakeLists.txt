@@ -278,6 +278,7 @@ add_executable(client_sctp_one_to_one_tls
     client_sctp_helper_one_to_one.cpp
     client_tls_helper.cpp
     common_tls.cpp
+    common_sctp.cpp
     common.cpp
 )
 target_link_libraries(client_sctp_one_to_one_tls
@@ -367,6 +368,7 @@ add_executable(client_sctp_one_to_many_tls
     client_tls_helper.cpp
     common_tls.cpp
     common.cpp
+    common_sctp.cpp
 )
 target_link_libraries(client_sctp_one_to_many_tls
     sctp

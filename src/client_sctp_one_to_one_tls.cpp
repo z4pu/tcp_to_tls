@@ -30,10 +30,12 @@ int Usage(char *argv[]);
 
 
 int main(int argc, char *argv[]){
-    int srv_port, sd, r, err = 0;
+    int srv_port, sd, r, err, assoc_id = 0;
     unsigned char received_string[MAX_STRING_LENGTH+1] = {};
     SSL *ssl;
     SSL_CTX* ctx = nullptr;
+    sockaddr_in peer_addr;
+    memset(&peer_addr, 0, sizeof(sockaddr_in));
 
     // As of version 1.1.0 OpenSSL will automatically allocate all
     // resources that it needs so no explicit initialisation is required.
@@ -58,11 +60,20 @@ int main(int argc, char *argv[]){
             if (!ctx) return -1;
 
             srv_port = atoi(argv[4]);
+            BuildAddress(peer_addr, srv_port, argv[2]);
 
             if ((sd = SCTPConnectOneToOne(srv_port, argv[2])) < 0){
                 perror("main(): SCTPConnect()");
                 return 0;
             }
+
+            assoc_id = GetSCTPAssociationID(sd, (sockaddr *)&peer_addr, sizeof(sockaddr_in));
+            if (assoc_id == -1) {
+                perror("GetSCTPAssociationID(): ");
+                close(sd);
+                return 0;
+            }
+            std::cout << "SCTP association ID: " << assoc_id << std::endl;
 
             ssl = SSL_new(ctx);
         	if (ssl == NULL){
