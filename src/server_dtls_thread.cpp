@@ -37,7 +37,7 @@ extern "C" {
     #include <openssl/ssl.h>
 }
 
-#define MAX_CLIENTS 10
+
 
 pthread_mutex_t sd_mutex;
 pthread_mutex_t ctx_lock;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
         mutexUnlock(&sd_mutex);
 
 		/* Set and activate timeouts */
-		timeout.tv_sec = 5;
+		timeout.tv_sec = TIMEOUT_IN_SECS;
 		timeout.tv_usec = 0;
 		BIO_ctrl(cookie_bio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 

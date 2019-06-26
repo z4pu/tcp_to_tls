@@ -39,9 +39,9 @@ void ProcessSCTPTLSClientWithServerSocket (const int& server_sd, SSL_CTX* const 
         return;
     }
 
-    dgramBio = BIO_new_dgram(server_sd, BIO_NOCLOSE);
+    dgramBio = BIO_new_dgram_sctp(server_sd, BIO_NOCLOSE);
     if (!dgramBio) {
-        OSSLErrorHandler("ProcessSCTPTLSClientWithServerSocket(): BIO_new_dgram(): cannot create from fd");
+        OSSLErrorHandler("ProcessSCTPTLSClientWithServerSocket(): BIO_new_dgram_sctp(): cannot create from fd");
         BIO_ADDR_free(client_addr_bio);
         return;
     }

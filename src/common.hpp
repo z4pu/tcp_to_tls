@@ -4,7 +4,8 @@
 #define MAX_STRING_LENGTH 144
 #define DEBUG
 #define NUM_CLIENTS 1
-#define TIMEOUT_IN_SECS 10
+#define MAX_CLIENTS 10
+#define TIMEOUT_IN_SECS 5
 
 void *get_in_addr(struct sockaddr *sa);
 bool FileExists(const char* filename);

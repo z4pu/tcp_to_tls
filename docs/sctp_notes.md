@@ -336,3 +336,35 @@ Such implicit associations cannot be created using send() and recv() calls. On a
 https://petanode.com/blog/posts/sctp-notifications-in-linux.html
 
 Each SCTP notification that you want to receive should be explicitly enabled with socket option. There are two ways to do that but more on this in the next section. When SCTP event occurs (and you are subscribed for it) it will be delivered with recvmsg(). The MSG_NOTIFICATION flag will be set in struct msghdr's msg_flags field. As for payload data you can check if the whole notification is delivered by checking if MSG_EOR flag is set. recvmsg() will always deliver only one notification per call.
+
+# https://www.linuxjournal.com/article/9784
+A TCP server handles multiple connections simultaneously by essentially using concurrent reads. This is done by using multiple processes, threads, or by poll/select among many sockets. A UDP server typically uses a single read loop, handling each message as it arrives. An SCTP one-to-many server looks like a UDP server: it will bind a socket and listen. Then, instead of blocking on accept(), which would return a new one-to-one socket, it blocks on sctp_rcvmsg(), which returns a message from either a new or existing association. Pseudo-code for such a server is:
+
+```
+sockfd = socket(...);
+bind(sockfd, ...);
+listen(sockfd, ...);
+while (true) {
+   nread = sctp_rcvmsg(sockfd, ..., buf, ..., &info);
+   assoc_id = sinfo.sinfo_assoc_id;
+   stream = sinfo.sinfo_stream;
+   handle_message(assoc_id, stream, buf, nread);
+}
+```
+A client also can use the one-to-many socket model. After binding to a port (probably an ephemeral one), it can use the single socket to connect to many other endpoints and use this single socket to send messages to any of them. It even can do away with an explicit connect operation and just start sending to new endpoints (an implicit connection is done if no existing association exists).
+
+The UDP-style gives the user the possibility to have multiple associations per socket. This socket style only allows calls to the sendmsg() and sendto() primitives but not to the send() primitive, which depend on the existence of a default association in the socket and such a thing does not exist in the UDP style socket. The sendmsg() and sendto() primitives will open a new association, when needed, and also reuse an already opened association. A user may branch off one association and create a new socket containing the selected association. The socket will be a TCP style socket which one can use the send() primitive
+
+Design and Implementation of SCTP-aware DTLS, R. Seggelmann, M. Tuxen and E. Rathgeb
+https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&cad=rja&uact=8&ved=2ahUKEwiUxPKGvoTjAhUSeysKHY1YB_wQFjABegQIARAB&url=https%3A%2F%2Fwww.researchgate.net%2Fpublication%2F228946304_Design_and_Implementation_of_SCTP-aware_DTLS&usg=AOvVaw1bsRAPwhnkVRvrAY92qaHu
+There already are existing approaches to provide encryption and authentication for SCTP. The first and obvious one is just to use TLS with SCTP. Basically this is possible, but a feature of TLS is to detect reordered or lost messages and assume a potential attack since TCP should have avoided that. SCTP does not maintain the order across different streams, so either the transfer has to be limited to a single stream or a TLS connection has to be negotiated for pairs of unidirectional streams, which results in high overhead. Other features of SCTP, like unordered or partially reliable (PR-SCTP) transfer cannot be used at all.
+The Datagram Transport Layer Security (DTLS) for unreliable protocols is also a pos-
+sible candidate. It does not have any issues with reordering and message loss, so streams, unordered transfer and PR-SCTP can be used with a single DTLS connection per association.
+However, DTLS does not assure the order of messages at all and since it does not protect SCTP control chunks or the header of the DATA chunk, an attacker can easily modify the order or drop packets entirely. DTLS also discards messages that it cannot process at the very moment,which is not compatible with the reliability of SCTP. Other solutions  are  Secure  SCTP and  Secure  Socket  SCTP  which  have  workingconcepts but require an elaborate and hardly to realize implementation and standardization.
+
+Secure end-to-end transport over SCTP
+Journal of Computers 2(4) · June 2007
+Hohendorf Carsten, Erwin P. Rathgeb, Esbold Unurkhaan, Tüxen Michael
+https://www.researchgate.net/publication/42803356_Secure_end-to-end_transport_over_SCTP
+
+https://github.com/openssl/openssl/issues/3723

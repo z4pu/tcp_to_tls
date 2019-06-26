@@ -2,6 +2,7 @@
 #include "server_sctp_helper_one_to_many_tls.hpp"
 #include "common.hpp"
 #include "common_tls.hpp"
+#include "common_sctp.hpp"
 #include "server_tls_helper.hpp"
 #include "server_dtls_helper.hpp"
 #include "thread_helper.hpp"
@@ -51,7 +52,7 @@ int Usage(int err, char *argv[]);
 
 int main(int argc, char *argv[])
 {
-    int err = 0;
+    int err, assoc_id = 0;
     int sd, server_port, status, r = 0;
     sctp_one_to_many_client_thread_args args;
     SSL_CTX* ctx = nullptr;
@@ -66,8 +67,7 @@ int main(int argc, char *argv[])
     BIO * dgramBio;
     struct timeval timeout;
     server_on = true;
-    struct sctp_status sctp_stat;
-    socklen_t sctp_status_size = sizeof(sctp_stat);
+    socklen_t client_addr_size = sizeof(client_addr);
 
     // As of version 1.1.0 OpenSSL will automatically allocate all
     // resources that it needs so no explicit initialisation is required.
@@ -125,20 +125,20 @@ int main(int argc, char *argv[])
 
     while (server_on) { // Set up BIOs and SSL for cookie exchange
         memset(&client_addr, 0, sizeof(struct sockaddr_in));
-        memset(&sctp_stat, 0, sizeof(struct sctp_status));
+        assoc_id = 0;
 
 		/* Create BIO */
         mutexLock(&sd_mutex);
-		dgramBio = BIO_new_dgram(sd, BIO_NOCLOSE);
+		dgramBio = BIO_new_dgram_sctp(sd, BIO_NOCLOSE);
         if (!dgramBio) {
-            OSSLErrorHandler("main(): BIO_new_dgram(): cannot create from fd");
+            OSSLErrorHandler("main(): BIO_new_dgram_sctp(): cannot create from fd");
             mutexUnlock(&sd_mutex);
             goto end;
         }
         mutexUnlock(&sd_mutex);
 
 		/* Set and activate timeouts */
-		timeout.tv_sec = 5;
+		timeout.tv_sec = TIMEOUT_IN_SECS;
 		timeout.tv_usec = 0;
 		BIO_ctrl(dgramBio, BIO_CTRL_DGRAM_SET_RECV_TIMEOUT, 0, &timeout);
 
@@ -165,20 +165,21 @@ int main(int argc, char *argv[])
         std::cout<< std::endl <<"Cookie exchange with " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << " OK!"<<  std::endl;
         #endif
 
-        r = getsockopt(sd, IPPROTO_SCTP, SCTP_STATUS,
-                 &sctp_stat, &sctp_status_size);
+        assoc_id = get_associd(sd, (sockaddr*)&client_addr, client_addr_size);
     	if (r < 0) {
     		perror("SCTPTLSOneToManyClientThread(): getsockopt(SCTP_STATUS)");
     		goto end;
     	}
 
+        #ifdef DEBUG
+        std::cout<< std::endl <<"Association ID " << assoc_id << " established" <<  std::endl;
+        #endif
 
         memcpy(&args.client_addr, &client_addr, sizeof(struct sockaddr_in));
-        memcpy(&args.sstat_primary, &sctp_stat.sstat_primary, sizeof(struct sctp_paddrinfo));
         args.ssl = ssl;
         args.ctx = ctx;
         args.server_sd = sd;
-        args.sstat_assoc_id = sctp_stat.sstat_assoc_id;
+        args.peer_assoc_id = assoc_id;
 
         status = pthread_create(&tid, NULL, SCTPTLSOneToManyClientThread, (void *)&args);
         if (status != 0)    {

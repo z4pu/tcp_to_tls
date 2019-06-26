@@ -9,7 +9,6 @@ extern "C" {
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <netdb.h>
-    #include <netinet/in.h>
     #include <sys/un.h>
     #include <arpa/inet.h>
     #include <netinet/sctp.h>
@@ -53,7 +52,7 @@ int SendSCTPOneToOne(const int& socket, const char * string)
 
 int RecvSCTPOneToManyMessage(int server_fd, struct sockaddr_in* sender_addr,  char * inbuff)
 {
-    char payload[1024];
+    char payload[SCTP_MSG_BUFSIZE+1];
     int buffer_len = sizeof(payload) - 1;
     memset(&payload, 0, sizeof(payload));
 
@@ -87,11 +86,11 @@ int RecvSCTPOneToManyMessage(int server_fd, struct sockaddr_in* sender_addr,  ch
         }
         else if(msg.msg_flags & MSG_EOR) {
 
-            printf("%s\n", payload);
+            printf("RecvSCTPOneToManyMessage(): %s\n", payload);
             break;
         }
         else {
-            printf("%s", payload); //if EOR flag is not set, the buffer is not big enough for the whole message
+            printf("RecvSCTPOneToManyMessage(): %s", payload); //if EOR flag is not set, the buffer is not big enough for the whole message
         }
     }
 
@@ -101,9 +100,9 @@ int RecvSCTPOneToManyMessage(int server_fd, struct sockaddr_in* sender_addr,  ch
 int SendSCTPOneToManyMessage(int server_fd, struct sockaddr_in* dest_addr, char * outbuff)
 
 {
-    char buf[1024];
+    char buf[SCTP_MSG_BUFSIZE+1];
     memset(buf, 0, sizeof(buf));
-    if (strlen(outbuff) > 1024-1) {
+    if (strlen(outbuff) > SCTP_MSG_BUFSIZE-1) {
         printf("SendSCTPOneToManyMessage(): Outbuff too long\n");
         return -1;
     }
@@ -128,7 +127,7 @@ int SendSCTPOneToManyMessage(int server_fd, struct sockaddr_in* dest_addr, char 
         return -1;
     }
 
-    std::cout << bytes_sent << " bytes sent\n" ;
+    std::cout << "SendSCTPOneToManyMessage(): " << bytes_sent << " bytes sent\n" ;
     return bytes_sent;
 }
 
@@ -144,20 +143,26 @@ int enable_notifications(int fd)
     return setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS, &events_subscr, sizeof(events_subscr));
 }
 
+// https://petanode.com/blog/posts/sctp-notifications-in-linux.html
+// Notice that I check if the MSG_NOTIFICATION flag is set and if MSG_EOR is cleared and only then call handle_notification() which reads the notification. This check is only to demonstrate how MSG_EOR works and is not sufficient for production code. The correct behavior is to save the partially read notification in another buffer and to call recvmsg() again until MSG_EOR is set.
+
+// There is also one side effect. If the buffer is not big enough you will retrieve the notification via two or more recvmsg() calls and you will see two or more warnings. However the last recvmsg() call will have the MSG_EOR flag set and handle notification will be called for the last part of the notification. In this case sn_type will be set to zero and you will get another warning about unhandled notification type. I know this is lame, but again - I want to focus on SCTP protocol right now. The proper C programming part is from you.
+//
+// Keep this things in mind when you write your code, because this implementation here is not good enough for production systems.
 int handle_notification(union sctp_notification *notif, size_t notif_len)
 {
     // http://stackoverflow.com/questions/20679070/how-does-one-determine-the-size-of-an-unnamed-struct
     int notif_header_size = sizeof( ((union sctp_notification*)NULL)->sn_header );
 
     if(notif_header_size > (int)notif_len) {
-        printf("Error: Notification msg size is smaller than notification header size!\n");
+        printf("CLIENT TID %lu: Error: Notification msg size is smaller than notification header size!\n", (unsigned long)pthread_self());
         return 1;
     }
 
     switch(notif->sn_header.sn_type) {
     case SCTP_ASSOC_CHANGE: {
         if(sizeof(struct sctp_assoc_change) > notif_len) {
-            printf("Error notification msg size is smaller than struct sctp_assoc_change size\n");
+            printf("CLIENT TID %lu: Error: Notification msg size is smaller than struct sctp_assoc_change size\n", (unsigned long)pthread_self());
             return 2;
         }
 
@@ -186,28 +191,45 @@ int handle_notification(union sctp_notification *notif, size_t notif_len)
             break;
         }
 
-        printf("SCTP_ASSOC_CHANGE notif: state: %s, error code: %d, out streams: %d, in streams: %d, assoc id: %d\n",
-               state, n->sac_error, n->sac_outbound_streams, n->sac_inbound_streams, n->sac_assoc_id);
+        printf("CLIENT TID %lu: SCTP_ASSOC_CHANGE notif: state: %s, error code: %d, out streams: %d, in streams: %d, assoc id: %d\n",
+            (unsigned long)pthread_self(),
+            state, n->sac_error, n->sac_outbound_streams, n->sac_inbound_streams, n->sac_assoc_id);
 
         break;
     }
 
     case SCTP_SHUTDOWN_EVENT: {
         if(sizeof(struct sctp_shutdown_event) > notif_len) {
-            printf("Error notification msg size is smaller than struct sctp_assoc_change size\n");
+            printf("CLIENT TID %lu: Error notification msg size is smaller than struct sctp_assoc_change size\n", (unsigned long)pthread_self());
             return 3;
         }
 
         struct sctp_shutdown_event* n = &notif->sn_shutdown_event;
 
-        printf("SCTP_SHUTDOWN_EVENT notif: assoc id: %d\n", n->sse_assoc_id);
+        printf("CLIENT TID %lu: SCTP_SHUTDOWN_EVENT notif: assoc id: %d\n",
+        (unsigned long)pthread_self(), n->sse_assoc_id);
         break;
     }
 
     default:
-        printf("Unhandled notification type %d\n", notif->sn_header.sn_type);
+        printf("CLIENT TID %lu: Unhandled notification type %d\n",
+        (unsigned long)pthread_self(),
+        notif->sn_header.sn_type);
         break;
     }
 
     return 0;
+}
+
+// Source: https://www.linuxjournal.com/article/9784
+int get_associd(int sockfd, struct sockaddr *sa, socklen_t salen) {
+    struct sctp_paddrinfo sp;
+    int sz;
+
+    sz = sizeof(struct sctp_paddrinfo);
+    bzero(&sp, sz);
+    memcpy(&sp.spinfo_address, sa, salen);
+    if (sctp_opt_info(sockfd, 0, SCTP_GET_PEER_ADDR_INFO, &sp, (socklen_t*)&sz) == -1)
+        perror("get assoc");
+    return (sp.spinfo_assoc_id);
 }

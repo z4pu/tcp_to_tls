@@ -41,8 +41,7 @@ struct sctp_one_to_many_client_thread_args{
     SSL_CTX * ctx;
     SSL * ssl;
     struct sockaddr_in client_addr;
-    struct sctp_paddrinfo sstat_primary;
-    sctp_assoc_t sstat_assoc_id;
+    sctp_assoc_t peer_assoc_id;
 };
 
 

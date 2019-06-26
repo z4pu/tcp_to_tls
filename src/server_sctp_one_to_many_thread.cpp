@@ -28,8 +28,6 @@ extern "C" {
 }
 
 
-#define TIMEOUT_IN_SECS 10
-#define MAX_CLIENTS 10
 
 pthread_mutex_t sd_mutex;
 

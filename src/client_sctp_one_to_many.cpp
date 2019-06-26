@@ -1,5 +1,6 @@
 
 #include "common.hpp"
+#include "common_sctp.hpp"
 #include "client_sctp_helper_one_to_many.hpp"
 
 
@@ -21,8 +22,7 @@ int Usage(char *argv[]);
 
 int main(int argc, char *argv[]){
     int srv_port, sd, r = 0;
-    unsigned char received_string[MAX_STRING_LENGTH+1] = {};
-    socklen_t peer_addr_len = sizeof(sockaddr_in);
+    char received_string[MAX_STRING_LENGTH+1] = {};
     sockaddr_in peer_addr;
     memset(&peer_addr, 0, sizeof(sockaddr_in));
 
@@ -49,9 +49,7 @@ int main(int argc, char *argv[]){
             }
 
             // Send data
-            r = sendto(sd, argv[6], strlen(argv[6]), 0,
-                (struct sockaddr *) &peer_addr,
-                    peer_addr_len);
+            r = SendSCTPOneToManyMessage(sd, &peer_addr, argv[6]);
             if (r == -1) {
               perror("main(): sendto()");
               close(sd);
@@ -59,8 +57,8 @@ int main(int argc, char *argv[]){
             }
             std::cout << "Sent string: " << argv[6] << std::endl;
 
-            r = recvfrom(sd, received_string, MAX_STRING_LENGTH, 0,
-                        (struct sockaddr *) &peer_addr, &peer_addr_len);
+
+            r = RecvSCTPOneToManyMessage(sd, &peer_addr,  received_string);
             if (r == -1) {
               perror("main(): recvfrom()");
               close(sd);

@@ -23,7 +23,7 @@ void * SCTPClientOneToManyThread(void* args) {
     udp_client_thread_args *thrd_args = (udp_client_thread_args *)args;
 
     int server_sd = thrd_args->server_sd;
-    std::cout << std::endl << "CLIENT TID " << (unsigned long)pthread_self() << std::endl;
+    std::cout << "CLIENT TID " << (unsigned long)pthread_self() << std::endl;
 
     for (;;)	{
         ProcessSCTPClientWithServerSocket (server_sd);

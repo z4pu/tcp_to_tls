@@ -316,6 +316,7 @@ add_executable(client_sctp_one_to_many
     client_sctp_one_to_many.cpp
     client_sctp_helper_one_to_many.cpp
     common.cpp
+    common_sctp.cpp
 )
 target_link_libraries(client_sctp_one_to_many
     sctp
@@ -329,6 +330,7 @@ add_executable(server_sctp_one_to_many_tls
     server_dtls_helper.cpp
     ck_secrets_vault.c
     common_tls.cpp
+    common_sctp.cpp
     common.cpp
 )
 target_link_libraries(server_sctp_one_to_many_tls
@@ -347,6 +349,7 @@ add_executable(server_sctp_one_to_many_tls_thread
     thread_tls_helper.cpp
     ck_secrets_vault.c
     common_tls.cpp
+    common_sctp.cpp
     common.cpp
 )
 target_link_libraries(server_sctp_one_to_many_tls_thread

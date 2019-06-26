@@ -33,8 +33,7 @@ extern "C" {
     #include <openssl/ssl.h>
 }
 
-#define TIMEOUT_IN_SECS 10
-#define MAX_CLIENTS 10
+
 
 pthread_mutex_t sd_mutex;
 pthread_mutex_t ctx_lock;
