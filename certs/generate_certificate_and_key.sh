@@ -21,9 +21,15 @@ fi
 # Check openssl-1.1.1c is valid
 if [[ $(which openssl-1.1.1c) ]]; then
     echo "openssl-1.1.1c found"
+    OSSL="openssl-1.1.1c"
 else
-    echo "openssl-1.1.1c not found"
-    exit 1
+    if [ $(which openssl) ]; then
+        echo "openssl found"
+        OSSL="openssl"
+    else
+        echo "openssl not found"
+        exit 1
+    fi
 fi
 
 while getopts ":s:c:" opt; do
@@ -50,58 +56,59 @@ done
 # authority if certauth.key and certauth.crt don't already exist
 echo "Generating self-signed X509 Certificate to issue TLS certificates to server and client"
 if [ ! -e certauth.key ] || [ ! -e certauth.crt ]; then
-  openssl-1.1.1c ecparam -genkey -name prime256v1 -out certauth.key
-  openssl-1.1.1c req -new -sha256 -key certauth.key -out certauth.csr \
+  $OSSL ecparam -genkey -name prime256v1 -out certauth.key
+  $OSSL req -new -sha256 -key certauth.key -out certauth.csr \
   -subj "/O=Test/OU=Self-Signed CA/CN=CA"
-  openssl-1.1.1c req -x509 -sha256 -days 3650 -key certauth.key -in certauth.csr \
+  $OSSL req -x509 -sha256 -days 3650 -key certauth.key -in certauth.csr \
   -out certauth.crt
 fi
 
 # Server
 # PEM Private key
-openssl-1.1.1c ecparam -name prime256v1 -genkey -noout -out server.key
+$OSSL ecparam -name prime256v1 -genkey -noout -out server.key
 # CSR
 echo
 echo "Generating certificate signing request for Server"
 if [ -z "$SERVERSUBJ" ]; then
-  openssl-1.1.1c req -new -sha256 -key server.key -out server.csr
+  $OSSL req -new -sha256 -key server.key -out server.csr
 else
-  openssl-1.1.1c req -new -sha256 -key server.key -out server.csr \
+  $OSSL req -new -sha256 -key server.key -out server.csr \
   -subj "$SERVERSUBJ"
 fi
 # DER public key for server
-openssl-1.1.1c pkey -inform PEM -outform der -in server.key -pubout \
+$OSSL pkey -inform PEM -outform der -in server.key -pubout \
 -out serverpubder.key
 
 #sign csr to get server.crt
-openssl-1.1.1c x509 -req -days 2555 -in server.csr -CA certauth.crt \
+$OSSL x509 -req -days 2555 -in server.csr -CA certauth.crt \
 -CAkey certauth.key -CAcreateserial -out serverjust.crt
 
 # Generate PEM Public Key for server
-openssl-1.1.1c ec -in server.key -pubout -out serverpub.key
+$OSSL ec -in server.key -pubout -out serverpub.key
 
 # append certificate to private key for server
 cat server.key serverjust.crt > server.crt
 
 # For Client
 # PEM private key
-openssl-1.1.1c ecparam -name prime256v1 -genkey -noout -out client.key
+$OSSL ecparam -name prime256v1 -genkey -noout -out client.key
 
 #CSR
 echo
 echo "Generating certificate signing request for client"
 if [ -z "$CLIENTSUBJ" ]; then
-  openssl-1.1.1c req -new -sha256 -key client.key -out client.csr
+  $OSSL req -new -sha256 -key client.key -out client.csr
 else
-  openssl-1.1.1c req -new -sha256 -key client.key -out client.csr \
+  $OSSL req -new -sha256 -key client.key -out client.csr \
   -subj "$CLIENTSUBJ"
 fi
 #sign csr to get cert
-openssl-1.1.1c x509 -req -days 2555 -in client.csr -CA certauth.crt \
+$OSSL x509 -req -days 2555 -in client.csr -CA certauth.crt \
 -CAkey certauth.key -CAcreateserial -out clientjust.crt
 
 # PEM public key
-openssl-1.1.1c ec -in client.key -pubout -out clientpub.key
+$OSSL ec -in client.key -pubout -out clientpub.key
 
 # append certificate to private key for client
 cat client.key clientjust.crt > client.crt
+

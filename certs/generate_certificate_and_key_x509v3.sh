@@ -15,9 +15,15 @@
 # Check openssl-1.1.1c is valid
 if [[ $(which openssl-1.1.1c) ]]; then
     echo "openssl-1.1.1c found"
+    OSSL="openssl-1.1.1c"
 else
-    echo "openssl-1.1.1c not found"
-    exit 1
+    if [ $(which openssl) ]; then
+        echo "openssl found"
+        OSSL="openssl"
+    else
+        echo "openssl not found"
+        exit 1
+    fi
 fi
 
 
@@ -25,11 +31,11 @@ fi
 # authority if certauth.key and certauth.crt don't already exist
 echo "Generating self-signed X509 Certificate to issue TLS certificates to server and client"
 if [ ! -e certauth.key ] || [ ! -e certauth.crt ]; then
-  openssl-1.1.1c ecparam -genkey -name prime256v1 -out certauth.key
-  openssl-1.1.1c req -new -sha256 -key certauth.key -out certauth.csr \
+  $OSSL ecparam -genkey -name prime256v1 -out certauth.key
+  $OSSL req -new -sha256 -key certauth.key -out certauth.csr \
   -config ../openssl_conf_files/openssl.cnf -extensions v3_rootca \
   -subj "/O=Test/OU=Self-Signed CA/CN=CA"
-  openssl-1.1.1c req -x509 -sha256 -days 3650 \
+  $OSSL req -x509 -sha256 -days 3650 \
     -config ../openssl_conf_files/openssl.cnf -extensions v3_rootca \
   -key certauth.key -in certauth.csr -out certauth.crt
 fi
@@ -37,34 +43,35 @@ echo
 
 # Server
 echo "Generating certificate for Server"
-openssl-1.1.1c ecparam -name prime256v1 -genkey -noout -out server.key
+$OSSL ecparam -name prime256v1 -genkey -noout -out server.key
 
-openssl-1.1.1c req -new -sha256 -key server.key -out server.csr \
+$OSSL req -new -sha256 -key server.key -out server.csr \
   -config ../openssl_conf_files/openssl.cnf -extensions v3_end_tlsserver \
   -subj "/O=Test/OU=Server/CN=Server"
-openssl-1.1.1c x509 -req -days 2555 -in server.csr \
+$OSSL x509 -req -days 2555 -in server.csr \
     -extfile ../openssl_conf_files/openssl.end_tls_server.cnf \
     -CA certauth.crt -CAkey certauth.key -CAcreateserial -out serverjust.crt
 # append certificate to private key for server
 cat server.key serverjust.crt > server.crt
 # Generate PEM Public Key for server
-openssl-1.1.1c ec -in server.key -pubout -out serverpub.key
+$OSSL ec -in server.key -pubout -out serverpub.key
 echo
 
 # For Client
 echo "Generating certificate for Client"
-openssl-1.1.1c ecparam -name prime256v1 -genkey -noout -out client.key
+$OSSL ecparam -name prime256v1 -genkey -noout -out client.key
 
-openssl-1.1.1c req -new -sha256 -key client.key -out client.csr \
+$OSSL req -new -sha256 -key client.key -out client.csr \
   -config ../openssl_conf_files/openssl.cnf -extensions v3_end_tlsclient \
   -subj "/O=Test/OU=Client/CN=Client"
 #sign csr to get cert
-openssl-1.1.1c x509 -req -days 2555 -in client.csr \
+$OSSL x509 -req -days 2555 -in client.csr \
     -extfile ../openssl_conf_files/openssl.end_tls_client.cnf \
     -CA certauth.crt -CAkey certauth.key -CAcreateserial -out clientjust.crt
 
 # PEM public key
-openssl-1.1.1c ec -in client.key -pubout -out clientpub.key
+$OSSL ec -in client.key -pubout -out clientpub.key
 
 # append certificate to private key for client
 cat client.key clientjust.crt > client.crt
+
