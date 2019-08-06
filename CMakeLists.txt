@@ -8,7 +8,8 @@ project (openssl_talk)
 # option for address sanitizer
 #################################################################
 option(BUILD_ASAN "Build with address sanitizer" OFF)
-
+# See src/common_tls.hpp: 13-18
+option(BUILD_CENTOS "Build for Centos, default is OFF and building for Debian" OFF)
 #################################################################
 # Compiler options
 #################################################################
@@ -21,6 +22,11 @@ add_compile_options(-std=c++11
 )
 if (BUILD_ASAN)
   add_compile_options(-fsanitize=address -fno-omit-frame-pointer )
+endif()
+if (BUILD_CENTOS)
+    add_compile_options("-DCENTOS")
+else()
+    add_compile_options("-DDEBIAN")
 endif()
 
 add_subdirectory(src)

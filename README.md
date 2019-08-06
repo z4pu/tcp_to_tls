@@ -32,7 +32,8 @@ Pre-requisites: CMAKE 3.7
 
 ~~~bash
 # Generate makefiles for debug build
-cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug
+cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug -DBUILD_CENTOS=OFF
+cmake -H. -B_builds -DCMAKE_BUILD_TYPE=Debug -DBUILD_CENTOS=ON
 
 # Generate makefiles for debug build with address sanitization
 # Good if your programs produce a segmentation fault while running
@@ -117,7 +118,7 @@ cd certs
 ./generate_certificate_and_key_x509v3.sh
 
 # Install the certauth.crt for centos or debian
-./install_ca_cert.sh -o debian
+./install_ca_cert.sh -o debian -c certauth.crt
 
 # Run the executables
 ./server_tls -p <port to listen>

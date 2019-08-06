@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # This script generates X.509v3 certificates using the prime256v1 curve for
-# the TLS connection between the server and client
+# the TLS connection between the server and client, issued by a self-signed CA
 #
 #
 # Usage:
@@ -50,9 +50,9 @@ $OSSL req -new -sha256 -key server.key -out server.csr \
   -subj "/O=Test/OU=Server/CN=Server"
 $OSSL x509 -req -days 2555 -in server.csr \
     -extfile ../openssl_conf_files/openssl.end_tls_server.cnf \
-    -CA certauth.crt -CAkey certauth.key -CAcreateserial -out serverjust.crt
+    -CA certauth.crt -CAkey certauth.key -CAcreateserial -out server.crt
 # append certificate to private key for server
-cat server.key serverjust.crt > server.crt
+cat server.key server.crt > server_key.crt
 # Generate PEM Public Key for server
 $OSSL ec -in server.key -pubout -out serverpub.key
 echo
@@ -67,11 +67,10 @@ $OSSL req -new -sha256 -key client.key -out client.csr \
 #sign csr to get cert
 $OSSL x509 -req -days 2555 -in client.csr \
     -extfile ../openssl_conf_files/openssl.end_tls_client.cnf \
-    -CA certauth.crt -CAkey certauth.key -CAcreateserial -out clientjust.crt
+    -CA certauth.crt -CAkey certauth.key -CAcreateserial -out client.crt
 
 # PEM public key
 $OSSL ec -in client.key -pubout -out clientpub.key
 
 # append certificate to private key for client
-cat client.key clientjust.crt > client.crt
-
+cat client.key client.crt > client_key.crt

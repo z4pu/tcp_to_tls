@@ -9,7 +9,13 @@ extern "C" {
 
 #define FULLCIPHERLIST "ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-SHA384"
 
-#define TRUSTED_CA_CERTS_FILE "/etc/ssl/certs/ca-certificates.crt"
+// At compile time, the -Dname=value option is used to select the appropriate code blocks and generate the executable.
+#ifdef DEBIAN
+  #define TRUSTED_CA_CERTS_FILE "/etc/ssl/certs/ca-certificates.crt"
+#endif
+#ifdef CENTOS
+  #define TRUSTED_CA_CERTS_FILE "/etc/pki/tls/certs/ca-bundle.crt"
+#endif
 
 extern BIO *bio_err;
 
